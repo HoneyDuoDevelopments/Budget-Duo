@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: budget-duo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: budget_duo
+      POSTGRES_USER: budget_duo
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /mnt/storage/docker/budget-duo/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U budget_duo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: budget-duo-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      SECRET_KEY: ${SECRET_KEY}
+      TELLER_CERT_PATH: /app/certs/certificate.pem
+      TELLER_KEY_PATH: /app/certs/private_key.pem
+      TELLER_ENV: development
+      TOKEN_JESS_BOFA: ${TOKEN_JESS_BOFA}
+      TOKEN_JESS_CAPONE: ${TOKEN_JESS_CAPONE}
+      TOKEN_SAM_BOFA: ${TOKEN_SAM_BOFA}
+      TOKEN_SAM_AMEX: ${TOKEN_SAM_AMEX}
+      TOKEN_SAM_CAPONE: ${TOKEN_SAM_CAPONE}
+      TOKEN_SAM_CITI: ${TOKEN_SAM_CITI}
+    volumes:
+      - /home/honey-duo/.teller/certs:/app/certs:ro
+    ports:
+      - "8500:8500"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8500/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
