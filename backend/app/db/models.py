@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, String, Numeric, Date, DateTime, Boolean,
-    Text, ForeignKey, UniqueConstraint, Index
+    Text, ForeignKey, UniqueConstraint, Index, Integer
 )
 from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy.sql import func
@@ -11,12 +11,12 @@ Base = declarative_base()
 class Enrollment(Base):
     __tablename__ = "enrollments"
 
-    id = Column(String, primary_key=True)  # Teller enrollment_id
+    id = Column(String, primary_key=True)
     institution_id = Column(String, nullable=False)
     institution_name = Column(String, nullable=False)
-    owner = Column(String, nullable=False)  # "sam" | "jess" | "joint"
+    owner = Column(String, nullable=False)          # sam | jess | joint
     access_token = Column(String, nullable=False)
-    status = Column(String, default="active")  # active | disconnected
+    status = Column(String, default="active")       # active | disconnected
     connected_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())
 
@@ -26,19 +26,17 @@ class Enrollment(Base):
 class Account(Base):
     __tablename__ = "accounts"
 
-    id = Column(String, primary_key=True)  # Teller account_id (canonical)
+    id = Column(String, primary_key=True)
     enrollment_id = Column(String, ForeignKey("enrollments.id"), nullable=False)
-    alias_id = Column(String, nullable=True)  # Non-canonical duplicate ID if any
+    alias_id = Column(String, nullable=True)
     institution_name = Column(String, nullable=False)
     name = Column(String, nullable=False)
-    type = Column(String, nullable=False)       # depository | credit
-    subtype = Column(String, nullable=False)    # checking | savings | credit_card
+    type = Column(String, nullable=False)           # depository | credit
+    subtype = Column(String, nullable=False)        # checking | savings | credit_card
     last_four = Column(String, nullable=False)
     currency = Column(String, default="USD")
-    owner = Column(String, nullable=False)      # sam | jess | joint
-    role = Column(String, nullable=False)       # household_checking | personal_checking
-                                                # household_savings_bills | personal_savings
-                                                # credit
+    owner = Column(String, nullable=False)          # sam | jess | joint
+    role = Column(String, nullable=False)
     is_bills_only = Column(Boolean, default=False)
     is_savings = Column(Boolean, default=False)
     status = Column(String, default="open")
@@ -46,49 +44,112 @@ class Account(Base):
 
     enrollment = relationship("Enrollment", back_populates="accounts")
     transactions = relationship("Transaction", back_populates="account")
+    balance = relationship("AccountBalance", back_populates="account", uselist=False)
 
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id = Column(String, primary_key=True)           # Teller txn_id
+    id = Column(String, primary_key=True)
     account_id = Column(String, ForeignKey("accounts.id"), nullable=False)
-    amount = Column(Numeric(12, 2), nullable=False)  # Negative = debit, positive = credit
+    amount = Column(Numeric(12, 2), nullable=False)
     date = Column(Date, nullable=False)
-    description = Column(String, nullable=False)     # Raw bank description
+    description = Column(String, nullable=False)
     counterparty_name = Column(String, nullable=True)
     counterparty_type = Column(String, nullable=True)
-    teller_category = Column(String, nullable=True)  # Teller's enriched category
-    custom_category = Column(String, nullable=True)  # User assigned
-    txn_type = Column(String, nullable=True)         # card_payment | transfer | atm etc
-    status = Column(String, nullable=False)          # posted | pending
+    teller_category = Column(String, nullable=True)
+
+    # V2 classification
+    txn_class = Column(String(32), nullable=True)           # expense | income | internal_transfer | cc_payment | investment_out | investment_in | debt_payment | savings_move | ignore
+    category_id = Column(String, ForeignKey("categories.id"), nullable=True)     # user assigned parent
+    subcategory_id = Column(String, ForeignKey("categories.id"), nullable=True)  # user assigned child
+    merchant_clean = Column(String(255), nullable=True)     # normalized merchant name
+    rule_id = Column(String(255), nullable=True)            # which rule classified this
+    user_verified = Column(Boolean, default=False)          # user has manually confirmed/overridden
+
+    # Legacy — kept for backwards compat, mapped to category_id
+    custom_category = Column(String, nullable=True)
+
+    txn_type = Column(String, nullable=True)
+    status = Column(String, nullable=False)
     is_income = Column(Boolean, default=False)
     is_recurring = Column(Boolean, default=False)
-    recurring_group = Column(String, nullable=True)  # Groups recurring txns by merchant
-    raw_json = Column(Text, nullable=True)           # Full Teller payload
+    recurring_group = Column(String, nullable=True)
+    recurring_type = Column(String(32), nullable=True)      # subscription | utility | recurring_expense | one_time
+    raw_json = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     account = relationship("Account", back_populates="transactions")
+    category = relationship("Category", foreign_keys=[category_id])
+    subcategory = relationship("Category", foreign_keys=[subcategory_id])
 
     __table_args__ = (
         Index("ix_transactions_account_date", "account_id", "date"),
         Index("ix_transactions_date", "date"),
         Index("ix_transactions_status", "status"),
         Index("ix_transactions_recurring", "is_recurring"),
+        Index("ix_transactions_txn_class", "txn_class"),
+        Index("ix_transactions_category_id", "category_id"),
+        Index("ix_transactions_merchant_clean", "merchant_clean"),
     )
 
 
 class Category(Base):
     __tablename__ = "categories"
 
-    id = Column(String, primary_key=True)  # slug e.g. "groceries"
-    name = Column(String, nullable=False)   # Display name e.g. "Groceries"
+    id = Column(String, primary_key=True)           # slug e.g. "groceries"
+    name = Column(String, nullable=False)
     parent_id = Column(String, ForeignKey("categories.id"), nullable=True)
-    color = Column(String, nullable=True)   # Hex color for UI
+    color = Column(String, nullable=True)
     icon = Column(String, nullable=True)
-    is_system = Column(Boolean, default=False)  # Teller built-in vs user created
+    is_system = Column(Boolean, default=False)
+    budget_amount = Column(Numeric(12, 2), nullable=True)   # monthly budget target
+    budget_period = Column(String(16), default="monthly")
+    sort_order = Column(Integer, default=0)
+    exclude_from_spending = Column(Boolean, default=False)  # transfers, investments etc
     created_at = Column(DateTime, server_default=func.now())
+
+    parent = relationship("Category", remote_side=[id], foreign_keys=[parent_id])
+    children = relationship("Category", foreign_keys=[parent_id])
+
+
+class MerchantRule(Base):
+    __tablename__ = "merchant_rules"
+
+    id = Column(String, primary_key=True)
+    # Matching
+    match_type = Column(String(32), nullable=False)     # description_contains | description_starts_with | counterparty_exact
+    match_value = Column(String(512), nullable=False)   # case-insensitive match string
+    # Outputs
+    txn_class = Column(String(32), nullable=True)
+    category_id = Column(String, nullable=True)
+    subcategory_id = Column(String, nullable=True)
+    recurring_type = Column(String(32), nullable=True)  # subscription | utility | recurring_expense | one_time
+    merchant_clean = Column(String(255), nullable=True)
+    # Meta
+    priority = Column(Integer, default=100)             # lower = higher priority
+    is_system = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    match_count = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_merchant_rules_match_type", "match_type"),
+        Index("ix_merchant_rules_active", "is_active"),
+    )
+
+
+class AccountBalance(Base):
+    __tablename__ = "account_balances"
+
+    account_id = Column(String, ForeignKey("accounts.id"), primary_key=True)
+    ledger = Column(Numeric(12, 2), nullable=True)
+    available = Column(Numeric(12, 2), nullable=True)
+    fetched_at = Column(DateTime, server_default=func.now())
+
+    account = relationship("Account", back_populates="balance")
 
 
 class SyncLog(Base):
@@ -96,8 +157,8 @@ class SyncLog(Base):
 
     id = Column(String, primary_key=True)
     account_id = Column(String, ForeignKey("accounts.id"), nullable=False)
-    sync_type = Column(String, nullable=False)  # webhook | scheduled | manual
-    status = Column(String, nullable=False)     # success | failed | partial
+    sync_type = Column(String, nullable=False)
+    status = Column(String, nullable=False)
     txns_added = Column(String, default="0")
     txns_updated = Column(String, default="0")
     error_message = Column(Text, nullable=True)

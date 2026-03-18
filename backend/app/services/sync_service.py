@@ -4,58 +4,36 @@ from datetime import date, timedelta
 from decimal import Decimal
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.db.models import Account, Transaction, SyncLog, Enrollment
+from app.db.models import Account, Transaction, SyncLog, Enrollment, AccountBalance
 from app.services.teller_client import TellerClient
+from app.services.classifier import classify_transaction
 from app.config import settings
 
-# Income detection patterns — description-based since Teller enrichment is unreliable
+
 INCOME_PATTERNS = [
-    "payroll",
-    "direct dep",
-    "direct deposit",
-    "ach credit",
-    "gusto",
-    "adp",
-    "paychex",
-    "intuit payroll",
+    "payroll", "direct dep", "direct deposit",
+    "ach credit", "gusto", "adp", "paychex", "intuit payroll",
 ]
 
-# These counterparties are always income regardless of category
-INCOME_COUNTERPARTIES = [
-    "tesla",
-    "tesla motors",
-]
+INCOME_COUNTERPARTIES = ["tesla", "tesla motors"]
 
 
 def is_income_transaction(t: dict, amount: Decimal) -> bool:
-    """Detect income by description patterns and amount sign."""
-    # Must be a positive amount (credit to account)
     if amount <= 0:
         return False
-
     description = (t.get("description") or "").lower()
     counterparty = ((t.get("details") or {}).get("counterparty") or {})
     counterparty_name = (counterparty.get("name") or "").lower()
     teller_category = ((t.get("details") or {}).get("category") or "").lower()
 
-    # Teller says income
     if teller_category == "income":
         return True
-
-    # Known income counterparties
     for cp in INCOME_COUNTERPARTIES:
         if cp in counterparty_name:
             return True
-
-    # Description patterns
     for pattern in INCOME_PATTERNS:
         if pattern in description:
             return True
-
-    # Tesla payroll specific pattern
-    if "tesla motors" in description and "payroll" in description:
-        return True
-
     return False
 
 
@@ -67,11 +45,11 @@ def upsert_transactions(db: Session, account_id: str, raw_txns: list) -> tuple[i
         details = t.get("details") or {}
         category = details.get("category")
         counterparty = details.get("counterparty") or {}
-
         income = is_income_transaction(t, amount)
 
         existing = db.get(Transaction, txn_id)
         if existing:
+            # Only update fields that don't require user re-verification
             existing.amount = amount
             existing.date = date.fromisoformat(t["date"])
             existing.status = t["status"]
@@ -80,9 +58,12 @@ def upsert_transactions(db: Session, account_id: str, raw_txns: list) -> tuple[i
             existing.counterparty_type = counterparty.get("type")
             existing.is_income = income
             existing.raw_json = json.dumps(t)
+            # Re-classify only if not user-verified
+            if not existing.user_verified:
+                classify_transaction(db, existing)
             updated += 1
         else:
-            db.add(Transaction(
+            txn = Transaction(
                 id=txn_id,
                 account_id=account_id,
                 amount=amount,
@@ -95,35 +76,13 @@ def upsert_transactions(db: Session, account_id: str, raw_txns: list) -> tuple[i
                 status=t["status"],
                 is_income=income,
                 raw_json=json.dumps(t),
-            ))
+            )
+            db.add(txn)
+            # Flush so the txn has an ID before classification
+            db.flush()
+            classify_transaction(db, txn)
             added += 1
     return added, updated
-
-
-def backfill_income(db: Session):
-    """Fix income detection on existing transactions using raw_json."""
-    print("Running income backfill...")
-    txns = db.execute(text(
-        "SELECT id, raw_json FROM transactions WHERE raw_json IS NOT NULL"
-    )).fetchall()
-
-    fixed = 0
-    for row in txns:
-        try:
-            t = json.loads(row[1])
-            amount = Decimal(str(t["amount"]))
-            income = is_income_transaction(t, amount)
-            if income:
-                db.execute(text(
-                    "UPDATE transactions SET is_income = true WHERE id = :id"
-                ), {"id": row[0]})
-                fixed += 1
-        except Exception:
-            continue
-
-    db.commit()
-    print(f"Income backfill complete — flagged {fixed} transactions")
-    return fixed
 
 
 def sync_account(db: Session, account: Account, enrollment: Enrollment) -> dict:
@@ -149,6 +108,24 @@ def sync_account(db: Session, account: Account, enrollment: Enrollment) -> dict:
 
     added, updated = upsert_transactions(db, account.id, txns)
 
+    # Update balance cache
+    try:
+        bal = client.get_balance(account.id)
+        existing_bal = db.get(AccountBalance, account.id)
+        if existing_bal:
+            existing_bal.ledger = Decimal(str(bal.get("ledger", 0) or 0))
+            existing_bal.available = Decimal(str(bal.get("available", 0) or 0))
+            from sqlalchemy.sql import func
+            existing_bal.fetched_at = func.now()
+        else:
+            db.add(AccountBalance(
+                account_id=account.id,
+                ledger=Decimal(str(bal.get("ledger", 0) or 0)),
+                available=Decimal(str(bal.get("available", 0) or 0)),
+            ))
+    except Exception as e:
+        print(f"Balance fetch failed for {account.name}: {e}")
+
     log = SyncLog(
         id=str(uuid.uuid4()),
         account_id=account.id,
@@ -163,7 +140,7 @@ def sync_account(db: Session, account: Account, enrollment: Enrollment) -> dict:
     return {"added": added, "updated": updated}
 
 
-def sync_all(db: Session):
+def sync_all(db: Session) -> dict:
     accounts = db.query(Account).filter(
         Account.status == "open",
         Account.is_bills_only == False,
@@ -178,33 +155,28 @@ def sync_all(db: Session):
         results[account.name] = result
         print(f"Synced {account.name}: {result}")
 
-    detect_recurring(db)
     return results
 
 
-def detect_recurring(db: Session):
-    results = db.execute(text("""
-        SELECT counterparty_name, COUNT(*) as count,
-               STDDEV(ABS(amount)) as stddev_amount
-        FROM transactions
-        WHERE counterparty_name IS NOT NULL
-          AND status = 'posted'
-          AND is_income = false
-        GROUP BY counterparty_name
-        HAVING COUNT(*) >= 3
-          AND (STDDEV(ABS(amount)) < 5.00 OR STDDEV(ABS(amount)) IS NULL)
-        ORDER BY count DESC
-    """)).fetchall()
-
-    recurring_names = [row[0] for row in results]
-
-    if recurring_names:
-        db.execute(text("""
-            UPDATE transactions
-            SET is_recurring = true,
-                recurring_group = counterparty_name
-            WHERE counterparty_name = ANY(:names)
-              AND is_income = false
-        """), {"names": recurring_names})
-        db.commit()
-        print(f"Flagged recurring for {len(recurring_names)} merchants")
+def backfill_income(db: Session):
+    """Legacy backfill - kept for compatibility"""
+    print("Running income backfill...")
+    txns = db.execute(text(
+        "SELECT id, raw_json FROM transactions WHERE raw_json IS NOT NULL"
+    )).fetchall()
+    fixed = 0
+    for row in txns:
+        try:
+            t = json.loads(row[1])
+            amount = Decimal(str(t["amount"]))
+            income = is_income_transaction(t, amount)
+            if income:
+                db.execute(text(
+                    "UPDATE transactions SET is_income = true WHERE id = :id"
+                ), {"id": row[0]})
+                fixed += 1
+        except Exception:
+            continue
+    db.commit()
+    print(f"Income backfill complete — flagged {fixed} transactions")
+    return fixed

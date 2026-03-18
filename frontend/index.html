@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Duo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e14;--bg2:#0f1520;--bg3:#161e2e;--bg4:#1e2a3d;--bg5:#253348;
+  --border:#1e2a3d;--border2:#253348;--border3:#2d3f5a;
+  --text:#e2eaf6;--text2:#8899b8;--text3:#4a5a78;--text4:#2d3f5a;
+  --green:#2dd4a0;--green-dim:rgba(45,212,160,0.1);--green-border:rgba(45,212,160,0.25);
+  --red:#f5627a;--red-dim:rgba(245,98,122,0.1);--red-border:rgba(245,98,122,0.25);
+  --amber:#f0a429;--amber-dim:rgba(240,164,41,0.1);--amber-border:rgba(240,164,41,0.25);
+  --blue:#4d9fff;--blue-dim:rgba(77,159,255,0.1);--blue-border:rgba(77,159,255,0.25);
+  --purple:#a78bfa;--purple-dim:rgba(167,139,250,0.1);
+  --cyan:#22d3ee;--cyan-dim:rgba(34,211,238,0.08);
+  --radius:6px;--radius-lg:10px;
+  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
+  --sidebar:220px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+#root{height:100%}
+
+/* ── Layout ── */
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:1fr;height:100vh;overflow:hidden}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+.main{overflow-y:auto;background:var(--bg)}
+
+/* ── Sidebar ── */
+.sidebar-logo{padding:20px 20px 8px;display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--green),var(--blue));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:500;color:#0a0e14;flex-shrink:0}
+.logo-text{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:-0.3px}
+.logo-text span{color:var(--green)}
+.sidebar-section{padding:16px 12px 4px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1.2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);margin:1px 8px;cursor:pointer;transition:all 0.12s;color:var(--text2);font-size:13px;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
+.nav-icon{width:16px;height:16px;opacity:0.7;flex-shrink:0}
+.nav-item.active .nav-icon{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:10px;min-width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:12px}
+.sync-btn{width:100%;background:var(--bg3);border:1px solid var(--border3);color:var(--text2);font-family:var(--mono);font-size:11px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;justify-content:center}
+.sync-btn:hover{border-color:var(--green);color:var(--green)}
+.sync-btn.syncing{color:var(--amber);border-color:var(--amber-border);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+
+/* ── Page header ── */
+.page-header{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.page-title{font-size:20px;font-weight:600;letter-spacing:-0.3px}
+.page-sub{font-size:12px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
+.page-content{padding:20px 28px 32px;display:flex;flex-direction:column;gap:18px}
+
+/* ── Summary cards ── */
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
+.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
+.sum-card.green::before{background:linear-gradient(90deg,var(--green),transparent)}
+.sum-card.red::before{background:linear-gradient(90deg,var(--red),transparent)}
+.sum-card.amber::before{background:linear-gradient(90deg,var(--amber),transparent)}
+.sum-card.blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.sum-card.purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.sum-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.sum-value{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-0.5px}
+.sum-value.green{color:var(--green)}
+.sum-value.red{color:var(--red)}
+.sum-value.amber{color:var(--amber)}
+.sum-value.blue{color:var(--blue)}
+.sum-value.purple{color:var(--purple)}
+.sum-sub{font-size:11px;color:var(--text3);margin-top:5px;font-family:var(--mono)}
+.sum-alert{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-border);padding:2px 7px;border-radius:10px;margin-top:6px;cursor:pointer}
+
+/* ── Panel / table ── */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.panel-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.panel-title{font-size:12px;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:0.8px}
+.panel-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+
+/* ── Filters bar ── */
+.filters-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;height:14px;pointer-events:none}
+.search-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;padding:6px 10px 6px 32px;border-radius:var(--radius);width:100%;outline:none;transition:border-color 0.15s}
+.search-input:focus{border-color:var(--blue)}
+.search-input::placeholder{color:var(--text3)}
+.filter-pill{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:var(--radius);outline:none;cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.filter-pill:focus,.filter-pill:hover{border-color:var(--blue-border);color:var(--text)}
+.filter-pill.active-filter{border-color:var(--blue-border);background:var(--blue-dim);color:var(--blue)}
+.count-badge{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;padding:0 4px}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{text-align:left;padding:8px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap;background:var(--bg2)}
+td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.015)}
+tr.is-income td{background:rgba(45,212,160,0.025)}
+tr.is-transfer td{opacity:0.5}
+tr.is-ignored td{opacity:0.35}
+.td-date{font-family:var(--mono);font-size:11px;color:var(--text2);white-space:nowrap}
+.td-merchant{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.td-raw{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;font-family:var(--mono)}
+.td-amount{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;white-space:nowrap}
+.td-amount.pos{color:var(--green)}
+.td-amount.neg{color:var(--text)}
+.td-amount.transfer{color:var(--text3)}
+.td-badges{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.badge{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:10px;font-weight:400;white-space:nowrap;border:1px solid transparent}
+.badge-income{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.badge-transfer{background:var(--bg4);color:var(--text3)}
+.badge-cc{background:var(--bg4);color:var(--text3)}
+.badge-invest{background:var(--purple-dim);color:var(--purple)}
+.badge-sub{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
+.badge-utility{background:var(--cyan-dim);color:var(--cyan)}
+.badge-sam{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
+.badge-jess{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
+.badge-joint{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
+.badge-pending{background:var(--bg4);color:var(--amber)}
+
+/* ── Category selects in table ── */
+.cat-cell{display:flex;flex-direction:column;gap:3px}
+.cat-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:3px 7px;border-radius:var(--radius);outline:none;cursor:pointer;max-width:160px;transition:border-color 0.12s}
+.cat-select:hover,.cat-select:focus{border-color:var(--blue-border)}
+.cat-select.assigned{color:var(--text);border-color:var(--border3)}
+
+/* ── Class select ── */
+.class-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:var(--radius);outline:none;cursor:pointer;transition:border-color 0.12s}
+.class-select:hover,.class-select:focus{border-color:var(--blue-border)}
+.class-select.expense{color:var(--text)}
+.class-select.income{color:var(--green)}
+.class-select.internal_transfer,.class-select.cc_payment,.class-select.savings_move{color:var(--text3)}
+.class-select.investment_in,.class-select.investment_out{color:var(--purple)}
+.class-select.debt_payment{color:var(--amber)}
+.class-select.ignore{color:var(--text4)}
+
+/* ── Pagination ── */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border)}
+.page-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;transition:all 0.12s}
+.page-btn:hover:not(:disabled){border-color:var(--blue-border);color:var(--blue)}
+.page-btn:disabled{opacity:0.3;cursor:not-allowed}
+.page-info{font-size:11px;color:var(--text3);font-family:var(--mono)}
+
+/* ── Account cards ── */
+.accounts-row{display:flex;gap:8px;flex-wrap:wrap}
+.acct-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;cursor:pointer;transition:all 0.15s;min-width:150px;flex:1}
+.acct-card:hover{border-color:var(--border3)}
+.acct-card.selected{border-color:var(--blue);background:var(--blue-dim)}
+.acct-card.all-card{flex:0;min-width:80px}
+.acct-name{font-size:12px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct-inst{font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)}
+.acct-balance{font-family:var(--mono);font-size:14px;font-weight:500;margin-bottom:4px}
+.acct-balance.checking{color:var(--blue)}
+.acct-balance.credit{color:var(--red)}
+.acct-balance.savings{color:var(--green)}
+.acct-badges{display:flex;gap:4px;flex-wrap:wrap}
+
+/* ── Recurring cards ── */
+.recurring-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;transition:border-color 0.15s}
+.rec-card:hover{border-color:var(--border3)}
+.rec-type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block;margin-right:6px}
+.rec-merchant{font-size:13px;font-weight:500;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center}
+.rec-stats{display:flex;gap:14px}
+.rec-stat-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px}
+.rec-stat-value{font-family:var(--mono);font-size:16px;font-weight:500;margin-top:2px}
+.rec-last{font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono)}
+
+/* ── Category management ── */
+.cat-tree{display:flex;flex-direction:column;gap:2px}
+.cat-parent-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);background:var(--bg3);cursor:pointer;user-select:none}
+.cat-parent-row:hover{background:var(--bg4)}
+.cat-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cat-row-name{font-size:13px;font-weight:500;flex:1}
+.cat-row-budget{font-family:var(--mono);font-size:11px;color:var(--text3)}
+.cat-row-actions{display:flex;gap:6px;opacity:0;transition:opacity 0.12s}
+.cat-parent-row:hover .cat-row-actions,.cat-child-row:hover .cat-row-actions{opacity:1}
+.cat-children{margin-left:20px;margin-top:2px;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--border);padding-left:12px}
+.cat-child-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:var(--radius);cursor:pointer}
+.cat-child-row:hover{background:var(--bg3)}
+.icon-btn{background:none;border:1px solid transparent;color:var(--text3);font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:var(--radius);cursor:pointer;transition:all 0.12s}
+.icon-btn:hover{border-color:var(--border3);color:var(--text)}
+.icon-btn.danger:hover{border-color:var(--red-border);color:var(--red)}
+
+/* ── Forms ── */
+.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px}
+.form-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 11px;border-radius:var(--radius);outline:none;transition:border-color 0.15s;min-width:180px}
+.form-input:focus{border-color:var(--blue)}
+.form-input::placeholder{color:var(--text3)}
+.form-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:var(--radius);outline:none;cursor:pointer}
+.form-select:focus{border-color:var(--blue)}
+.color-input{width:38px;height:34px;border:1px solid var(--border2);border-radius:var(--radius);padding:2px;background:var(--bg3);cursor:pointer}
+.btn{font-family:var(--mono);font-size:12px;padding:7px 16px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;border:1px solid transparent}
+.btn-primary{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
+.btn-primary:hover{background:var(--blue);color:#0a0e14}
+.btn-success{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
+.btn-success:hover{background:var(--green);color:#0a0e14}
+.btn-ghost{background:none;border-color:var(--border2);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--border3);color:var(--text)}
+.btn:disabled{opacity:0.4;cursor:not-allowed}
+.err-msg{color:var(--red);font-size:11px;font-family:var(--mono);margin-top:4px}
+
+/* ── Rules view ── */
+.rule-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);transition:background 0.1s}
+.rule-row:hover{background:var(--bg3)}
+.rule-row:last-child{border-bottom:none}
+.rule-match{font-family:var(--mono);font-size:11px;color:var(--text2);flex:1;min-width:0}
+.rule-match-val{color:var(--text);font-weight:500}
+.rule-outputs{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.rule-pill{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;border:1px solid var(--border3);color:var(--text2);white-space:nowrap}
+.rule-pill.class{border-color:var(--blue-border);color:var(--blue);background:var(--blue-dim)}
+.rule-pill.cat{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
+.rule-pill.rec{border-color:var(--amber-border);color:var(--amber);background:var(--amber-dim)}
+.rule-count{font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;min-width:50px;text-align:right}
+.rule-system-badge{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;background:var(--bg4);color:var(--text3);flex-shrink:0}
+
+/* ── Misc ── */
+.loading,.empty{padding:40px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px}
+.section-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.verified-dot{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;vertical-align:middle;opacity:0.7}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+
+/* ── Budget progress ── */
+.budget-bar-wrap{margin-top:8px}
+.budget-bar-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.budget-bar-fill{height:100%;border-radius:2px;transition:width 0.3s}
+.budget-bar-fill.ok{background:var(--green)}
+.budget-bar-fill.warn{background:var(--amber)}
+.budget-bar-fill.over{background:var(--red)}
+.budget-pct{font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:3px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/htm@3/dist/htm.umd.js"></script>
+<script>
+const { useState, useEffect, useCallback, useMemo, useRef } = React;
+const html = htm.bind(React.createElement);
+const API = 'http://192.168.0.245:8500';
+
+// ── Formatters ──
+const fmt = n => '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtSigned = n => (n>=0?'+':'-') + fmt(n);
+const fmtDate = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const fmtDateFull = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+
+const shortName = name => name
+  .replace('Adv Plus Banking','Checking')
+  .replace('Adv SafeBalance Banking','SafeBalance')
+  .replace('Advantage Savings','Savings')
+  .replace('Unlimited Cash Rewards Visa Signature','Cash Rewards')
+  .replace('Customized Cash Rewards Visa Signature','Custom Cash')
+  .replace('Costco Anywhere Visa® Card by Citi','Costco Visa')
+  .replace('Amex EveryDay® Card','Amex EveryDay')
+  .replace('360 Performance Savings','360 Savings');
+
+const TXN_CLASSES = [
+  {value:'expense',        label:'Expense'},
+  {value:'income',         label:'Income'},
+  {value:'internal_transfer', label:'Internal Transfer'},
+  {value:'cc_payment',     label:'CC Payment'},
+  {value:'investment_in',  label:'Investment In'},
+  {value:'investment_out', label:'Investment Out'},
+  {value:'debt_payment',   label:'Debt Payment'},
+  {value:'savings_move',   label:'Savings Move'},
+  {value:'ignore',         label:'Ignore'},
+];
+
+const RECURRING_TYPES = [
+  {value:'',                label:'— not recurring —'},
+  {value:'subscription',    label:'Subscription'},
+  {value:'utility',         label:'Utility'},
+  {value:'recurring_expense', label:'Regular Expense'},
+  {value:'one_time',        label:'One-time'},
+];
+
+const CLASS_COLORS = {
+  expense: '',
+  income: 'income',
+  internal_transfer: 'transfer',
+  cc_payment: 'cc',
+  investment_in: 'invest',
+  investment_out: 'invest',
+  debt_payment: 'amber',
+  savings_move: 'transfer',
+  ignore: '',
+};
+
+// ── API helpers ──
+const apiFetch = (path, opts={}) => fetch(`${API}${path}`, {
+  headers:{'Content-Type':'application/json'},
+  ...opts,
+  body: opts.body ? JSON.stringify(opts.body) : undefined,
+}).then(r => r.json());
+
+// ── useAPI hook ──
+function useAPI(path, deps=[]) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const load = useCallback(async () => {
+    if (!path) return;
+    setLoading(true);
+    try {
+      const d = await apiFetch(path);
+      setData(d);
+      setError(null);
+    } catch(e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [path, ...deps]);
+  useEffect(()=>{load();},[load]);
+  return {data, loading, error, reload: load};
+}
+
+// ══════════════════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════════════════
+
+function OwnerBadge({owner}) {
+  return html`<span className=${`badge badge-${owner}`}>${owner}</span>`;
+}
+
+function ClassBadge({cls}) {
+  if (!cls) return null;
+  const map = {
+    income: html`<span className="badge badge-income">income</span>`,
+    internal_transfer: html`<span className="badge badge-transfer">transfer</span>`,
+    cc_payment: html`<span className="badge badge-cc">cc pmt</span>`,
+    investment_in: html`<span className="badge badge-invest">invest in</span>`,
+    investment_out: html`<span className="badge badge-invest">invest out</span>`,
+    savings_move: html`<span className="badge badge-transfer">savings</span>`,
+    debt_payment: html`<span className="badge badge-sub">debt pmt</span>`,
+    ignore: html`<span className="badge" style=${{color:'var(--text4)'}}>ignore</span>`,
+  };
+  return map[cls] || null;
+}
+
+function RecurringBadge({type}) {
+  if (!type) return null;
+  if (type==='subscription') return html`<span className="badge badge-sub">sub</span>`;
+  if (type==='utility') return html`<span className="badge badge-utility">utility</span>`;
+  if (type==='recurring_expense') return html`<span className="badge badge-cc">recurring</span>`;
+  return null;
+}
+
+// ── Summary Cards ──
+function SummaryCards({summary, onUncatClick}) {
+  if (!summary) return html`<div className="summary-grid">${[0,1,2,3].map(i=>html`<div key=${i} className="sum-card"><div className="loading" style=${{padding:'20px 0'}}>···</div></div>`)}</div>`;
+  const net = summary.income_mtd - summary.spending_mtd;
+  return html`
+    <div className="summary-grid">
+      <div className="sum-card green">
+        <div className="sum-label">Income MTD</div>
+        <div className="sum-value green">${fmt(summary.income_mtd)}</div>
+        <div className="sum-sub">Tesla payroll</div>
+      </div>
+      <div className="sum-card red">
+        <div className="sum-label">Real Spending MTD</div>
+        <div className="sum-value red">${fmt(summary.spending_mtd)}</div>
+        ${summary.uncategorized_count > 0 && html`
+          <div className="sum-alert" onClick=${onUncatClick}>
+            ⚠ ${summary.uncategorized_count} uncategorized
+          </div>`}
+      </div>
+      <div className="sum-card blue">
+        <div className="sum-label">Cash on Hand</div>
+        <div className="sum-value blue">${fmt(summary.cash_on_hand || 0)}</div>
+        <div className="sum-sub">Checking accounts</div>
+      </div>
+      <div className="sum-card purple">
+        <div className="sum-label">Credit Debt</div>
+        <div className="sum-value purple">${fmt(summary.credit_debt || 0)}</div>
+        <div className="sum-sub">Paid ${fmt(summary.cc_paid_mtd)} MTD</div>
+      </div>
+    </div>`;
+}
+
+// ── Account Cards ──
+function AccountCards({accounts, selected, onSelect}) {
+  const getBalanceClass = a => {
+    if (a.type === 'credit') return 'credit';
+    if (a.is_savings) return 'savings';
+    return 'checking';
+  };
+  return html`
+    <div>
+      <div className="section-label">Accounts</div>
+      <div className="accounts-row">
+        <div className=${`acct-card all-card ${selected===null?'selected':''}`}
+          onClick=${()=>onSelect(null)}>
+          <div className="acct-name">All</div>
+          <div className="acct-inst">${accounts.length} linked</div>
+        </div>
+        ${accounts.map(a=>html`
+          <div key=${a.id} className=${`acct-card ${selected===a.id?'selected':''}`}
+            onClick=${()=>onSelect(a.id===selected?null:a.id)}>
+            <div className="acct-name">${shortName(a.name)}</div>
+            <div className="acct-inst">${a.institution} ···${a.last_four}</div>
+            ${a.balance_ledger != null && html`
+              <div className=${`acct-balance ${getBalanceClass(a)}`}>
+                ${a.type==='credit' ? fmt(Math.abs(a.balance_ledger)) : fmt(a.balance_ledger)}
+              </div>`}
+            <div className="acct-badges">
+              <${OwnerBadge} owner=${a.owner} />
+              ${a.is_savings && html`<span className="badge" style=${{color:'var(--green)',background:'var(--green-dim)'}}>savings</span>`}
+              ${a.type==='credit' && html`<span className="badge" style=${{color:'var(--text3)'}}>credit</span>`}
+            </div>
+          </div>`)}
+      </div>
+    </div>`;
+}
+
+// ── Transactions View ──
+function TransactionsView({accounts, categories, onUpdate}) {
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [search, setSearch] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('');
+  const [recurringFilter, setRecurringFilter] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(0);
+  const PAGE = 50;
+
+  // Build query string
+  const queryStr = useMemo(()=>{
+    const p = new URLSearchParams({limit:2000});
+    if (selectedAccount) p.set('account_id', selectedAccount);
+    if (ownerFilter) p.set('owner', ownerFilter);
+    return p.toString();
+  },[selectedAccount, ownerFilter]);
+
+  const {data: allTxns, loading, reload} = useAPI(`/api/transactions?${queryStr}`, [queryStr]);
+  const txns = allTxns || [];
+
+  // Apply filter from parent (e.g. clicking uncategorized alert)
+  useEffect(()=>{
+    if (initialClassFilter === 'expense_uncat') {
+      setClassFilter('expense');
+      setCatFilter('__uncat__');
+      setPage(0);
+      onFilterUsed && onFilterUsed();
+    }
+  },[initialClassFilter]);
+
+  const acctMap = useMemo(()=>{
+    const m={};(accounts||[]).forEach(a=>{m[a.id]=a;});return m;
+  },[accounts]);
+
+  const catMap = useMemo(()=>{
+    const m={};(categories||[]).forEach(c=>{m[c.id]=c;});return m;
+  },[categories]);
+
+  // Build category tree for dropdowns
+  const parentCats = useMemo(()=>
+    (categories||[]).filter(c=>!c.parent_id&&!c.exclude_from_spending),
+  [categories]);
+  const childrenOf = useMemo(()=>{
+    const m={};
+    (categories||[]).filter(c=>c.parent_id).forEach(c=>{
+      if(!m[c.parent_id]) m[c.parent_id]=[];
+      m[c.parent_id].push(c);
+    });
+    return m;
+  },[categories]);
+
+  const filtered = useMemo(()=>{
+    let t = txns;
+    if (search) {
+      const q = search.toLowerCase();
+      t = t.filter(x=>(x.description||'').toLowerCase().includes(q)
+        ||(x.counterparty||'').toLowerCase().includes(q)
+        ||(x.merchant_clean||'').toLowerCase().includes(q));
+    }
+    if (classFilter) t = t.filter(x=>x.txn_class===classFilter);
+    if (catFilter === '__uncat__') t = t.filter(x=>!x.category_id && !x.subcategory_id && x.txn_class === 'expense');
+    else if (catFilter) t = t.filter(x=>x.category_id===catFilter||x.subcategory_id===catFilter);
+    if (recurringFilter) t = t.filter(x=>x.recurring_type===recurringFilter);
+    if (dateFrom) t = t.filter(x=>x.date>=dateFrom);
+    if (dateTo) t = t.filter(x=>x.date<=dateTo);
+    return t;
+  },[txns,search,classFilter,catFilter]);
+
+  const paged = filtered.slice(page*PAGE,(page+1)*PAGE);
+  const totalPages = Math.ceil(filtered.length/PAGE);
+
+  useEffect(()=>setPage(0),[search,classFilter,catFilter,recurringFilter,dateFrom,dateTo,selectedAccount,ownerFilter]);
+
+  async function updateTxn(id, changes) {
+    await apiFetch(`/api/transactions/${id}`, {method:'PATCH', body: changes});
+    reload();
+    onUpdate && onUpdate();
+  }
+
+  const rowClass = t => {
+    if (t.txn_class==='income') return 'is-income';
+    if (['internal_transfer','cc_payment','savings_move'].includes(t.txn_class)) return 'is-transfer';
+    if (t.txn_class==='ignore') return 'is-ignored';
+    return '';
+  };
+
+  const amtClass = t => {
+    if (t.txn_class==='income') return 'pos';
+    if (['internal_transfer','cc_payment','savings_move','ignore'].includes(t.txn_class)) return 'transfer';
+    return t.amount >= 0 ? 'pos' : 'neg';
+  };
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <${AccountCards} accounts=${accounts||[]} selected=${selectedAccount}
+        onSelect=${a=>{setSelectedAccount(a);}} />
+
+      <div className="panel">
+        <div className="filters-bar">
+          <div className="search-wrap">
+            <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
+            </svg>
+            <input className="search-input" placeholder="Search merchant, description..."
+              value=${search} onInput=${e=>{setSearch(e.target.value);}} />
+          </div>
+          <select className="filter-pill" value=${classFilter}
+            onChange=${e=>{setClassFilter(e.target.value);if(catFilter==='__uncat__')setCatFilter('');}}>
+            <option value="">All types</option>
+            <option value="expense">Expenses</option>
+            <option value="income">Income</option>
+            <option value="internal_transfer">Transfers</option>
+            <option value="cc_payment">CC Payments</option>
+            <option value="investment_out">Investments</option>
+            <option value="ignore">Ignored</option>
+          </select>
+          <select className="filter-pill" value=${recurringFilter}
+            onChange=${e=>setRecurringFilter(e.target.value)}>
+            <option value="">All recurring</option>
+            <option value="subscription">Subscriptions</option>
+            <option value="utility">Utilities</option>
+            <option value="recurring_expense">Regular</option>
+          </select>
+          <select className="filter-pill" value=${catFilter}
+            onChange=${e=>setCatFilter(e.target.value)}>
+            <option value="">All categories</option>
+            ${parentCats.map(p=>html`
+              <optgroup key=${p.id} label=${p.name}>
+                <option value=${p.id}>${p.name} (all)</option>
+                ${(childrenOf[p.id]||[]).map(c=>html`
+                  <option key=${c.id} value=${c.id}>  ${c.name}</option>`)}
+              </optgroup>`)}
+          </select>
+          <select className="filter-pill" value=${ownerFilter}
+            onChange=${e=>setOwnerFilter(e.target.value)}>
+            <option value="">All owners</option>
+            <option value="sam">Sam</option>
+            <option value="jess">Jess</option>
+            <option value="joint">Joint</option>
+          </select>
+          <input type="date" className="filter-pill" value=${dateFrom}
+            onChange=${e=>setDateFrom(e.target.value)}
+            style=${{fontFamily:'var(--mono)',fontSize:'11px',cursor:'pointer'}}
+            title="From date" />
+          <input type="date" className="filter-pill" value=${dateTo}
+            onChange=${e=>setDateTo(e.target.value)}
+            style=${{fontFamily:'var(--mono)',fontSize:'11px',cursor:'pointer'}}
+            title="To date" />
+          ${(classFilter||catFilter||recurringFilter||dateFrom||dateTo||ownerFilter) && html`
+            <button className="btn btn-ghost" style=${{fontSize:'10px',padding:'4px 8px'}}
+              onClick=${()=>{setClassFilter('');setCatFilter('');setRecurringFilter('');setDateFrom('');setDateTo('');setOwnerFilter('');}}>
+              clear
+            </button>`}
+          <span className="count-badge">${filtered.length.toLocaleString()} txns</span>
+        </div>
+
+        ${loading
+          ? html`<div className="loading">Loading transactions...</div>`
+          : paged.length===0
+            ? html`<div className="empty">No transactions match your filters</div>`
+            : html`
+              <div className="tbl-wrap">
+                <table>
+                  <thead><tr>
+                    <th>Date</th>
+                    <th>Merchant</th>
+                    <th>Account</th>
+                    <th style=${{textAlign:'right'}}>Amount</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                  </tr></thead>
+                  <tbody>
+                    ${paged.map(t=>{
+                      const acct = acctMap[t.account_id];
+                      const cat = catMap[t.category_id];
+                      const subcat = catMap[t.subcategory_id];
+                      const showCatSelect = t.txn_class==='expense' || !t.txn_class;
+                      const parentCatsForSelect = parentCats;
+                      return html`<tr key=${t.id} className=${rowClass(t)}>
+                        <td className="td-date">${fmtDate(t.date)}</td>
+                        <td>
+                          <div className="td-merchant" title=${t.description}>
+                            ${t.merchant_clean || t.counterparty || t.description}
+                            ${t.user_verified && html`<span className="verified-dot" title="Manually verified" />`}
+                          </div>
+                          ${(t.merchant_clean||t.counterparty) && html`
+                            <div className="td-raw">${t.description.substring(0,50)}</div>`}
+                        </td>
+                        <td>
+                          ${acct && html`<div>
+                            <div style=${{fontSize:'11px',color:'var(--text2)',fontFamily:'var(--mono)'}}>···${acct.last_four}</div>
+                            <${OwnerBadge} owner=${acct.owner} />
+                          </div>`}
+                        </td>
+                        <td>
+                          <div className=${`td-amount ${amtClass(t)}`}>${fmt(t.amount)}</div>
+                          ${t.status==='pending'&&html`<div style=${{fontSize:'10px',color:'var(--amber)',fontFamily:'var(--mono)',textAlign:'right'}}>pending</div>`}
+                        </td>
+                        <td>
+                          <div className="td-badges">
+                            <${ClassBadge} cls=${t.txn_class} />
+                            <${RecurringBadge} type=${t.recurring_type} />
+                          </div>
+                          <select className=${`class-select ${t.txn_class||''}`}
+                            style=${{marginTop:'4px'}}
+                            value=${t.txn_class||''}
+                            onChange=${e=>updateTxn(t.id,{txn_class:e.target.value})}>
+                            <option value="">— unclassified —</option>
+                            ${TXN_CLASSES.map(c=>html`<option key=${c.value} value=${c.value}>${c.label}</option>`)}
+                          </select>
+                        </td>
+                        <td>
+                          ${showCatSelect && html`<div className="cat-cell">
+                            <select className=${`cat-select ${t.category_id?'assigned':''}`}
+                              value=${t.category_id||''}
+                              onChange=${e=>updateTxn(t.id,{category_id:e.target.value,subcategory_id:null})}>
+                              <option value="">— category —</option>
+                              ${parentCatsForSelect.map(p=>html`
+                                <optgroup key=${p.id} label=${p.name}>
+                                  <option value=${p.id}>${p.name}</option>
+                                  ${(childrenOf[p.id]||[]).map(c=>html`
+                                    <option key=${c.id} value=${c.id}>  ${c.name}</option>`)}
+                                </optgroup>`)}
+                            </select>
+                            ${t.category_id && childrenOf[t.category_id] && childrenOf[t.category_id].length > 0 && html`
+                              <select className=${`cat-select ${t.subcategory_id?'assigned':''}`}
+                                value=${t.subcategory_id||''}
+                                onChange=${e=>updateTxn(t.id,{subcategory_id:e.target.value})}>
+                                <option value="">— subcategory —</option>
+                                ${(childrenOf[t.category_id]||[]).map(c=>html`
+                                  <option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                              </select>`}
+                          </div>`}
+                        </td>
+                      </tr>`;
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="pagination">
+                <button className="page-btn" onClick=${()=>setPage(p=>p-1)} disabled=${page===0}>← prev</button>
+                <span className="page-info">page ${page+1} / ${Math.max(1,totalPages)} · ${filtered.length.toLocaleString()} results</span>
+                <button className="page-btn" onClick=${()=>setPage(p=>p+1)} disabled=${page>=totalPages-1}>next →</button>
+              </div>`}
+      </div>
+    </div>`;
+}
+
+// ── Recurring View ──
+function RecurringView() {
+  const {data, loading, reload} = useAPI('/api/recurring');
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [showAddRule, setShowAddRule] = useState(false);
+  const [addForm, setAddForm] = useState({match_value:'', merchant_clean:'', recurring_type:'subscription'});
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const items = data || [];
+  const filtered = items.filter(r=>{
+    if (!showCancelled && r.recurring_type === 'cancelled') return false;
+    if (search && !r.merchant.toLowerCase().includes(search.toLowerCase())) return false;
+    if (typeFilter && r.recurring_type !== typeFilter) return false;
+    return true;
+  });
+
+  const typeColor = t => {
+    if (t==='subscription') return 'var(--amber)';
+    if (t==='utility') return 'var(--cyan)';
+    if (t==='recurring_expense') return 'var(--blue)';
+    return 'var(--text3)';
+  };
+
+  const totalMonthly = filtered.reduce((s,r)=>s+r.avg_amount,0);
+
+  const [showCancelled, setShowCancelled] = useState(false);
+
+  async function cancelMerchant(merchant) {
+    // Creates a rule that marks this merchant as one_time + inactive going forward
+    // We tag with a special recurring_type 'cancelled' so we can filter it
+    try {
+      await apiFetch('/api/rules', {method:'POST', body:{
+        match_type:'description_contains',
+        match_value:merchant.toLowerCase(),
+        recurring_type:'cancelled',
+        txn_class:'expense',
+        merchant_clean:merchant,
+        apply_to_existing:true,
+        priority:75,
+      }});
+      reload();
+    } catch(e) { console.error(e); }
+  }
+
+  async function updateType(merchant, newType) {
+    try {
+      await apiFetch('/api/rules', {method:'POST', body:{
+        match_type:'description_contains',
+        match_value:merchant.toLowerCase(),
+        recurring_type:newType||null,
+        txn_class:'expense',
+        merchant_clean:merchant,
+        apply_to_existing:true,
+        priority:80,
+      }});
+      reload();
+    } catch(e) { console.error(e); }
+  }
+
+  async function addMissed() {
+    if (!addForm.match_value.trim()) { setErr('Search term required'); return; }
+    setSaving(true); setErr('');
+    try {
+      await apiFetch('/api/rules', {method:'POST', body:{
+        match_type:'description_contains',
+        match_value:addForm.match_value.trim(),
+        merchant_clean:addForm.merchant_clean.trim()||addForm.match_value.trim(),
+        recurring_type:addForm.recurring_type,
+        txn_class:'expense',
+        apply_to_existing:true,
+        priority:80,
+      }});
+      setAddForm({match_value:'',merchant_clean:'',recurring_type:'subscription'});
+      setShowAddRule(false);
+      reload();
+    } catch(e) { setErr(e.message); }
+    finally { setSaving(false); }
+  }
+
+  if (loading) return html`<div className="loading">Loading recurring charges...</div>`;
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <div className="summary-grid" style=${{gridTemplateColumns:'repeat(3,1fr)'}}>
+        <div className="sum-card amber">
+          <div className="sum-label">Monthly Total</div>
+          <div className="sum-value amber">${fmt(totalMonthly)}</div>
+          <div className="sum-sub">${filtered.length} merchants</div>
+        </div>
+        <div className="sum-card blue">
+          <div className="sum-label">Subscriptions</div>
+          <div className="sum-value blue">${filtered.filter(r=>r.recurring_type==='subscription').length}</div>
+          <div className="sum-sub">${fmt(filtered.filter(r=>r.recurring_type==='subscription').reduce((s,r)=>s+r.avg_amount,0))} / mo</div>
+        </div>
+        <div className="sum-card green">
+          <div className="sum-label">Utilities</div>
+          <div className="sum-value green">${filtered.filter(r=>r.recurring_type==='utility').length}</div>
+          <div className="sum-sub">${fmt(filtered.filter(r=>r.recurring_type==='utility').reduce((s,r)=>s+r.avg_amount,0))} / mo</div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Subscriptions & Bills</span>
+          <div className="panel-actions">
+            <div className="search-wrap" style=${{width:'200px'}}>
+              <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
+              </svg>
+              <input className="search-input" placeholder="Search merchant..."
+                value=${search} onInput=${e=>setSearch(e.target.value)} />
+            </div>
+            <select className="filter-pill" value=${typeFilter}
+              onChange=${e=>setTypeFilter(e.target.value)}>
+              <option value="">All types</option>
+              <option value="subscription">Subscriptions</option>
+              <option value="utility">Utilities</option>
+              <option value="recurring_expense">Regular Expenses</option>
+            </select>
+            <span className="count-badge">${filtered.length}</span>
+            <button className="btn btn-ghost" style=${{fontSize:'11px'}} onClick=${()=>setShowCancelled(p=>!p)}>
+              ${showCancelled?'hide cancelled':'show cancelled'}
+            </button>
+            <button className="btn btn-primary" onClick=${()=>setShowAddRule(p=>!p)}>+ Add missed</button>
+          </div>
+        </div>
+
+        ${showAddRule && html\`
+          <div style=${{padding:'14px',borderBottom:'1px solid var(--border)',background:'var(--bg3)'}}>
+            <div style=${{fontSize:'12px',color:'var(--text2)',marginBottom:'10px'}}>
+              Add a subscription or bill the auto-detector missed. Enter a keyword from the transaction description.
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Description contains</label>
+                <input className="form-input" placeholder="e.g. hulu, xfinity, geico..."
+                  value=${addForm.match_value}
+                  onInput=${e=>setAddForm(f=>({...f,match_value:e.target.value}))} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Display name (optional)</label>
+                <input className="form-input" placeholder="e.g. Hulu"
+                  value=${addForm.merchant_clean}
+                  onInput=${e=>setAddForm(f=>({...f,merchant_clean:e.target.value}))} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Type</label>
+                <select className="form-select" value=${addForm.recurring_type}
+                  onChange=${e=>setAddForm(f=>({...f,recurring_type:e.target.value}))}>
+                  <option value="subscription">Subscription</option>
+                  <option value="utility">Utility / Bill</option>
+                  <option value="recurring_expense">Regular Expense</option>
+                </select>
+              </div>
+              <button className="btn btn-success" onClick=${addMissed} disabled=${saving}>
+                ${saving?'saving...':'+ add'}
+              </button>
+              <button className="btn btn-ghost" onClick=${()=>{setShowAddRule(false);setErr('');}}>cancel</button>
+            </div>
+            ${err && html\`<div className="err-msg">${err}</div>\`}
+          </div>\`}
+
+        <div style=${{padding:'14px'}}>
+          <div className="recurring-grid">
+            ${filtered.map(r=>html\`
+              <div key=${r.merchant} className="rec-card">
+                <div className="rec-merchant">
+                  <span className="rec-type-dot" style=${{background:typeColor(r.recurring_type)}} />
+                  ${r.merchant}
+                </div>
+                <div className="rec-stats">
+                  <div>
+                    <div className="rec-stat-label">avg / mo</div>
+                    <div className="rec-stat-value" style=${{color:typeColor(r.recurring_type)}}>${fmt(r.avg_amount)}</div>
+                  </div>
+                  <div>
+                    <div className="rec-stat-label">times</div>
+                    <div className="rec-stat-value" style=${{color:'var(--blue)'}}>${r.occurrences}</div>
+                  </div>
+                </div>
+                <div style=${{marginTop:'8px',display:'flex',alignItems:'center',gap:'6px',flexWrap:'wrap'}}>
+                  <select
+                    style=${{background:'var(--bg4)',border:'1px solid var(--border3)',color:typeColor(r.recurring_type),fontFamily:'var(--mono)',fontSize:'10px',padding:'2px 6px',borderRadius:'4px',outline:'none',cursor:'pointer'}}
+                    value=${r.recurring_type||''}
+                    onChange=${e=>updateType(r.merchant,e.target.value)}>
+                    <option value="">unclassified</option>
+                    <option value="subscription">subscription</option>
+                    <option value="utility">utility</option>
+                    <option value="recurring_expense">regular</option>
+                    <option value="one_time">one-time</option>
+                  </select>
+                  <span style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
+                    last ${fmtDateFull(r.last_seen)}
+                  </span>
+                  <button
+                    title="Mark as cancelled — hides from active list"
+                    onClick=${()=>cancelMerchant(r.merchant)}
+                    style=${{marginLeft:'auto',background:'none',border:'1px solid var(--border3)',color:'var(--text3)',fontFamily:'var(--mono)',fontSize:'10px',padding:'2px 6px',borderRadius:'4px',cursor:'pointer'}}>
+                    cancel
+                  </button>
+                </div>
+              </div>\`)}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+// ── Categories View ──
+function CategoriesView({categories, onUpdate}) {
+  const [showAddParent, setShowAddParent] = useState(false);
+  const [showAddChild, setShowAddChild] = useState(null); // parent id
+  const [editId, setEditId] = useState(null);
+  const [expanded, setExpanded] = useState({});
+  const [form, setForm] = useState({name:'',color:'#4d9fff',budget_amount:'',parent_id:null});
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+
+  const parents = (categories||[]).filter(c=>!c.parent_id);
+  const childrenOf = useMemo(()=>{
+    const m={};
+    (categories||[]).filter(c=>c.parent_id).forEach(c=>{
+      if(!m[c.parent_id]) m[c.parent_id]=[];
+      m[c.parent_id].push(c);
+    });
+    return m;
+  },[categories]);
+
+  const toggleExpand = id => setExpanded(prev=>({...prev,[id]:!prev[id]}));
+
+  async function save(parentId=null) {
+    if (!form.name.trim()) { setErr('Name required'); return; }
+    setSaving(true); setErr('');
+    try {
+      const body = {
+        name: form.name.trim(),
+        color: form.color,
+        parent_id: parentId,
+        budget_amount: form.budget_amount ? parseFloat(form.budget_amount) : null,
+      };
+      if (editId) {
+        await apiFetch(`/api/categories/${editId}`, {method:'PATCH', body});
+      } else {
+        await apiFetch('/api/categories', {method:'POST', body});
+      }
+      setForm({name:'',color:'#4d9fff',budget_amount:'',parent_id:null});
+      setShowAddParent(false); setShowAddChild(null); setEditId(null);
+      onUpdate && onUpdate();
+    } catch(e) { setErr(e.message); }
+    finally { setSaving(false); }
+  }
+
+  async function deleteCategory(id) {
+    if (!confirm('Delete this category? Transactions will be unassigned.')) return;
+    try {
+      const r = await apiFetch(`/api/categories/${id}`, {method:'DELETE'});
+      if (r.error) { alert(r.detail || r.error); return; }
+      onUpdate && onUpdate();
+    } catch(e) { alert(e.message); }
+  }
+
+  const startEdit = (c) => {
+    setEditId(c.id);
+    setForm({name:c.name,color:c.color||'#4d9fff',budget_amount:c.budget_amount||'',parent_id:c.parent_id});
+    setShowAddParent(true);
+  };
+
+  const AddForm = ({parentId=null}) => html`
+    <div style=${{background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:'var(--radius)',padding:'12px',marginTop:'8px'}}>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">Name</label>
+          <input className="form-input" placeholder="Category name" value=${form.name}
+            onInput=${e=>setForm(f=>({...f,name:e.target.value}))}
+            onKeyDown=${e=>e.key==='Enter'&&save(parentId)} style=${{width:'200px'}} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Color</label>
+          <input type="color" className="color-input" value=${form.color}
+            onInput=${e=>setForm(f=>({...f,color:e.target.value}))} />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Budget / mo</label>
+          <input className="form-input" type="number" placeholder="Optional" value=${form.budget_amount}
+            onInput=${e=>setForm(f=>({...f,budget_amount:e.target.value}))} style=${{width:'120px'}} />
+        </div>
+        <button className="btn btn-success" onClick=${()=>save(parentId)} disabled=${saving}>
+          ${saving?'saving...':editId?'save changes':'+ add'}
+        </button>
+        <button className="btn btn-ghost" onClick=${()=>{setShowAddParent(false);setShowAddChild(null);setEditId(null);setErr('');}}>
+          cancel
+        </button>
+      </div>
+      ${err && html`<div className="err-msg">${err}</div>`}
+    </div>`;
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'16px'}}>
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Category Management</span>
+          <div className="panel-actions">
+            <button className="btn btn-primary" onClick=${()=>{setShowAddParent(p=>!p);setEditId(null);setForm({name:'',color:'#4d9fff',budget_amount:''});}}>
+              + New category
+            </button>
+          </div>
+        </div>
+        <div style=${{padding:'14px',display:'flex',flexDirection:'column',gap:'4px'}}>
+          ${showAddParent && html`<${AddForm} parentId=${null} />`}
+          ${parents.map(p=>html`
+            <div key=${p.id}>
+              <div className="cat-parent-row" onClick=${()=>toggleExpand(p.id)}>
+                <span style=${{fontSize:'11px',color:'var(--text3)',fontFamily:'var(--mono)',marginRight:'2px'}}>
+                  ${expanded[p.id]?'▾':'▸'}
+                </span>
+                <div className="cat-color-dot" style=${{background:p.color}} />
+                <span className="cat-row-name">${p.name}</span>
+                ${p.is_system && html`<span style=${{fontSize:'10px',color:'var(--text4)',fontFamily:'var(--mono)'}}>system</span>`}
+                ${p.budget_amount && html`<span className="cat-row-budget">${fmt(p.budget_amount)}/mo</span>`}
+                <span style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
+                  ${(childrenOf[p.id]||[]).length} sub
+                </span>
+                <div className="cat-row-actions">
+                  <button className="icon-btn" onClick=${e=>{e.stopPropagation();startEdit(p);}}>edit</button>
+                  ${!p.is_system && html`<button className="icon-btn danger" onClick=${e=>{e.stopPropagation();deleteCategory(p.id);}}>del</button>`}
+                </div>
+              </div>
+
+              ${expanded[p.id] && html`
+                <div className="cat-children">
+                  ${(childrenOf[p.id]||[]).map(c=>html`
+                    <div key=${c.id} className="cat-child-row">
+                      <div className="cat-color-dot" style=${{background:c.color||p.color}} />
+                      <span style=${{fontSize:'12px',flex:1}}>${c.name}</span>
+                      ${c.budget_amount && html`<span className="cat-row-budget">${fmt(c.budget_amount)}/mo</span>`}
+                      <div className="cat-row-actions">
+                        <button className="icon-btn" onClick=${()=>startEdit(c)}>edit</button>
+                        ${!c.is_system && html`<button className="icon-btn danger" onClick=${()=>deleteCategory(c.id)}>del</button>`}
+                      </div>
+                    </div>`)}
+                  <div style=${{paddingTop:'4px'}}>
+                    ${showAddChild===p.id
+                      ? html`<${AddForm} parentId=${p.id} />`
+                      : html`<button className="icon-btn" style=${{fontSize:'11px'}}
+                          onClick=${e=>{e.stopPropagation();setShowAddChild(p.id);setEditId(null);setForm({name:'',color:p.color||'#4d9fff',budget_amount:''});}}>
+                          + subcategory
+                        </button>`}
+                  </div>
+                </div>`}
+            </div>`)}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Rules View ──
+function RulesView({categories}) {
+  const {data, loading, reload} = useAPI('/api/rules');
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({match_type:'description_contains',match_value:'',txn_class:'expense',category_id:'',merchant_clean:'',recurring_type:'',apply_to_existing:false});
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState('');
+  const [search, setSearch] = useState('');
+
+  const rules = data || [];
+  const filtered = rules.filter(r=>!search||r.match_value.toLowerCase().includes(search.toLowerCase())||((r.merchant_clean||'').toLowerCase().includes(search.toLowerCase())));
+
+  const catMap = useMemo(()=>{const m={};(categories||[]).forEach(c=>{m[c.id]=c;});return m;},[categories]);
+  const parentCats = (categories||[]).filter(c=>!c.parent_id);
+
+  async function addRule() {
+    if (!form.match_value.trim()) { setErr('Match value required'); return; }
+    setSaving(true); setErr('');
+    try {
+      await apiFetch('/api/rules', {method:'POST', body:{
+        ...form,
+        category_id: form.category_id || null,
+        recurring_type: form.recurring_type || null,
+        merchant_clean: form.merchant_clean || null,
+      }});
+      setShowAdd(false);
+      setForm({match_type:'description_contains',match_value:'',txn_class:'expense',category_id:'',merchant_clean:'',recurring_type:'',apply_to_existing:false});
+      reload();
+    } catch(e) { setErr(e.message); }
+    finally { setSaving(false); }
+  }
+
+  async function toggleActive(rule) {
+    await apiFetch(`/api/rules/${rule.id}`, {method:'PATCH', body:{is_active:!rule.is_active}});
+    reload();
+  }
+
+  async function deleteRule(id) {
+    if (!confirm('Delete this rule?')) return;
+    await apiFetch(`/api/rules/${id}`, {method:'DELETE'});
+    reload();
+  }
+
+  if (loading) return html`<div className="loading">Loading rules...</div>`;
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <div className="panel">
+        <div className="panel-header">
+          <span className="panel-title">Merchant Rules</span>
+          <span style=${{fontSize:'11px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
+            ${rules.filter(r=>r.is_system).length} system · ${rules.filter(r=>!r.is_system).length} user
+          </span>
+          <div className="panel-actions">
+            <div className="search-wrap" style=${{width:'200px'}}>
+              <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
+              </svg>
+              <input className="search-input" placeholder="Search rules..."
+                value=${search} onInput=${e=>setSearch(e.target.value)} />
+            </div>
+            <button className="btn btn-primary" onClick=${()=>setShowAdd(p=>!p)}>+ New rule</button>
+          </div>
+        </div>
+
+        ${showAdd && html`
+          <div style=${{padding:'14px',borderBottom:'1px solid var(--border)',background:'var(--bg3)'}}>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Match type</label>
+                <select className="form-select" value=${form.match_type}
+                  onChange=${e=>setForm(f=>({...f,match_type:e.target.value}))}>
+                  <option value="description_contains">Description contains</option>
+                  <option value="description_starts_with">Description starts with</option>
+                  <option value="counterparty_exact">Counterparty exact</option>
+                </select>
+              </div>
+              <div className="form-group" style=${{flex:1}}>
+                <label className="form-label">Match value</label>
+                <input className="form-input" placeholder="e.g. netflix, MSPBNA, Spotify..." value=${form.match_value}
+                  onInput=${e=>setForm(f=>({...f,match_value:e.target.value}))} style=${{width:'100%'}} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Class</label>
+                <select className="form-select" value=${form.txn_class}
+                  onChange=${e=>setForm(f=>({...f,txn_class:e.target.value}))}>
+                  ${TXN_CLASSES.map(c=>html`<option key=${c.value} value=${c.value}>${c.label}</option>`)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Category</label>
+                <select className="form-select" value=${form.category_id}
+                  onChange=${e=>setForm(f=>({...f,category_id:e.target.value}))}>
+                  <option value="">None</option>
+                  ${parentCats.map(p=>html`<option key=${p.id} value=${p.id}>${p.name}</option>`)}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Recurring</label>
+                <select className="form-select" value=${form.recurring_type}
+                  onChange=${e=>setForm(f=>({...f,recurring_type:e.target.value}))}>
+                  ${RECURRING_TYPES.map(r=>html`<option key=${r.value} value=${r.value}>${r.label}</option>`)}
+                </select>
+              </div>
+            </div>
+            <div className="form-row" style=${{marginTop:'8px'}}>
+              <div className="form-group" style=${{flex:1}}>
+                <label className="form-label">Display name (optional)</label>
+                <input className="form-input" placeholder="Clean merchant name to show in UI" value=${form.merchant_clean}
+                  onInput=${e=>setForm(f=>({...f,merchant_clean:e.target.value}))} style=${{width:'100%'}} />
+              </div>
+              <label style=${{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px',color:'var(--text2)',cursor:'pointer',paddingBottom:'2px'}}>
+                <input type="checkbox" checked=${form.apply_to_existing}
+                  onChange=${e=>setForm(f=>({...f,apply_to_existing:e.target.checked}))} />
+                Apply to existing transactions
+              </label>
+              <button className="btn btn-success" onClick=${addRule} disabled=${saving}>
+                ${saving?'saving...':'+ add rule'}
+              </button>
+              <button className="btn btn-ghost" onClick=${()=>{setShowAdd(false);setErr('');}}>cancel</button>
+            </div>
+            ${err && html`<div className="err-msg">${err}</div>`}
+          </div>`}
+
+        <div>
+          ${filtered.map(r=>html`
+            <div key=${r.id} className="rule-row" style=${{opacity:r.is_active?1:0.4}}>
+              <div className="rule-match" style=${{minWidth:'0'}}>
+                <span style=${{color:'var(--text3)',fontFamily:'var(--mono)',fontSize:'10px'}}>${r.match_type} </span>
+                <span className="rule-match-val">"${r.match_value}"</span>
+                ${r.merchant_clean && html`<span style=${{color:'var(--text2)',fontSize:'11px'}}> → ${r.merchant_clean}</span>`}
+              </div>
+              <div className="rule-outputs">
+                ${r.txn_class && html`<span className="rule-pill class">${r.txn_class}</span>`}
+                ${r.category_id && catMap[r.category_id] && html`<span className="rule-pill cat">${catMap[r.category_id].name}</span>`}
+                ${r.recurring_type && html`<span className="rule-pill rec">${r.recurring_type}</span>`}
+              </div>
+              <span className="rule-count">${(r.match_count||0).toLocaleString()} hits</span>
+              ${r.is_system && html`<span className="rule-system-badge">sys</span>`}
+              <div style=${{display:'flex',gap:'4px',flexShrink:0}}>
+                <button className="icon-btn" onClick=${()=>toggleActive(r)}>
+                  ${r.is_active?'disable':'enable'}
+                </button>
+                ${!r.is_system && html`<button className="icon-btn danger" onClick=${()=>deleteRule(r.id)}>del</button>`}
+              </div>
+            </div>`)}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── Accounts / Balances View ──
+function AccountsView({accounts, onRefresh, refreshing}) {
+  const checking = (accounts||[]).filter(a=>a.type==='depository'&&!a.is_savings);
+  const savings = (accounts||[]).filter(a=>a.is_savings);
+  const credit = (accounts||[]).filter(a=>a.type==='credit');
+
+  const totalChecking = checking.reduce((s,a)=>s+(a.balance_ledger||0),0);
+  const totalSavings = savings.reduce((s,a)=>s+(a.balance_ledger||0),0);
+  const totalDebt = credit.reduce((s,a)=>s+Math.abs(a.balance_ledger||0),0);
+  const netWorth = totalChecking + totalSavings - totalDebt;
+
+  const AccountGroup = ({title, accts, colorClass}) => html`
+    <div className="panel">
+      <div className="panel-header">
+        <span className="panel-title">${title}</span>
+        <span style=${{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:'13px',color:`var(--${colorClass})`}}>
+          ${fmt(accts.reduce((s,a)=>s+Math.abs(a.balance_ledger||0),0))}
+        </span>
+      </div>
+      <div style=${{padding:'4px 0'}}>
+        ${accts.map(a=>html`
+          <div key=${a.id} style=${{display:'flex',alignItems:'center',gap:'12px',padding:'10px 16px',borderBottom:'1px solid var(--border)'}}>
+            <div style=${{flex:1}}>
+              <div style=${{fontSize:'13px',fontWeight:'500'}}>${shortName(a.name)}</div>
+              <div style=${{fontSize:'11px',color:'var(--text2)',fontFamily:'var(--mono)',marginTop:'2px'}}>${a.institution} ···${a.last_four}</div>
+            </div>
+            <${OwnerBadge} owner=${a.owner} />
+            <div style=${{textAlign:'right'}}>
+              <div style=${{fontFamily:'var(--mono)',fontSize:'14px',fontWeight:'500',color:`var(--${colorClass})`}}>
+                ${a.balance_ledger != null ? fmt(Math.abs(a.balance_ledger)) : '—'}
+              </div>
+              ${a.balance_available != null && a.balance_available !== a.balance_ledger && html`
+                <div style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
+                  avail ${fmt(a.balance_available)}
+                </div>`}
+            </div>
+          </div>`)}
+      </div>
+    </div>`;
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <div className="summary-grid">
+        <div className="sum-card blue">
+          <div className="sum-label">Checking</div>
+          <div className="sum-value blue">${fmt(totalChecking)}</div>
+          <div className="sum-sub">${checking.length} accounts</div>
+        </div>
+        <div className="sum-card green">
+          <div className="sum-label">Savings</div>
+          <div className="sum-value green">${fmt(totalSavings)}</div>
+          <div className="sum-sub">${savings.length} accounts</div>
+        </div>
+        <div className="sum-card red">
+          <div className="sum-label">Credit Debt</div>
+          <div className="sum-value red">${fmt(totalDebt)}</div>
+          <div className="sum-sub">${credit.length} cards</div>
+        </div>
+        <div className=${`sum-card ${netWorth>=0?'green':'red'}`}>
+          <div className="sum-label">Net Liquid</div>
+          <div className=${`sum-value ${netWorth>=0?'green':'red'}`}>${fmt(netWorth)}</div>
+          <div className="sum-sub">Checking + savings − debt</div>
+        </div>
+      </div>
+      <div style=${{display:'flex',justifyContent:'flex-end'}}>
+        <button className=${`btn btn-ghost ${refreshing?'syncing':''}`} onClick=${onRefresh} disabled=${refreshing}>
+          ${refreshing?'refreshing balances...':'↻ refresh balances'}
+        </button>
+      </div>
+      <${AccountGroup} title="Checking Accounts" accts=${checking} colorClass="blue" />
+      <${AccountGroup} title="Savings Accounts" accts=${savings} colorClass="green" />
+      <${AccountGroup} title="Credit Cards" accts=${credit} colorClass="red" />
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// APP ROOT
+// ══════════════════════════════════════════════════════
+function App() {
+  const [tab, setTab] = useState('transactions');
+  const [txnClassFilter, setTxnClassFilter] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [refreshingBalances, setRefreshingBalances] = useState(false);
+  const [uncatCount, setUncatCount] = useState(0);
+
+  const {data: accounts, reload: reloadAccounts} = useAPI('/api/accounts');
+  const {data: categories, reload: reloadCategories} = useAPI('/api/categories');
+  const {data: summary, reload: reloadSummary} = useAPI('/api/summary');
+
+  useEffect(()=>{
+    if (summary) setUncatCount(summary.uncategorized_count || 0);
+  },[summary]);
+
+  async function sync() {
+    setSyncing(true);
+    try {
+      await apiFetch('/api/sync', {method:'POST'});
+      reloadAccounts(); reloadCategories(); reloadSummary();
+    } finally { setSyncing(false); }
+  }
+
+  async function refreshBalances() {
+    setRefreshingBalances(true);
+    try {
+      await apiFetch('/api/balances/refresh', {method:'POST'});
+      reloadAccounts(); reloadSummary();
+    } finally { setRefreshingBalances(false); }
+  }
+
+  function reloadAll() {
+    reloadAccounts(); reloadCategories(); reloadSummary();
+  }
+
+  const NAV = [
+    {id:'transactions', label:'Transactions', icon:'≡'},
+    {id:'recurring',    label:'Subscriptions & Bills', icon:'↻'},
+    {id:'accounts',     label:'Accounts & Balances', icon:'◈'},
+    {id:'categories',   label:'Categories', icon:'◆'},
+    {id:'rules',        label:'Merchant Rules', icon:'⚙'},
+  ];
+
+  const PAGE_TITLES = {
+    transactions: 'Transactions',
+    recurring: 'Subscriptions & Bills',
+    accounts: 'Accounts & Balances',
+    categories: 'Category Management',
+    rules: 'Merchant Rules',
+  };
+
+  return html`
+    <div className="app">
+      <!-- Sidebar -->
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-mark">b.</div>
+          <div className="logo-text">budget<span>.</span>duo</div>
+        </div>
+
+        <div className="sidebar-section">Navigation</div>
+        ${NAV.map(n=>html`
+          <button key=${n.id} className=${`nav-item ${tab===n.id?'active':''}`}
+            onClick=${()=>setTab(n.id)}>
+            <span className="nav-icon" style=${{fontFamily:'var(--mono)',fontSize:'13px',textAlign:'center'}}>${n.icon}</span>
+            ${n.label}
+            ${n.id==='transactions' && uncatCount > 0 && html`
+              <span className="nav-badge">${uncatCount}</span>`}
+          </button>`)}
+
+        <div className="sidebar-footer">
+          <button className=${`sync-btn ${syncing?'syncing':''}`} onClick=${sync} disabled=${syncing}>
+            <span style=${{fontFamily:'var(--mono)'}}>↻</span>
+            ${syncing?'syncing...':'sync accounts'}
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main -->
+      <main className="main">
+        <div className="page-header">
+          <div>
+            <div className="page-title">${PAGE_TITLES[tab]}</div>
+            <div className="page-sub">${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</div>
+          </div>
+        </div>
+
+        <div className="page-content">
+          <!-- Summary always visible on txn/accounts tabs -->
+          ${(tab==='transactions'||tab==='accounts') && html`
+            <${SummaryCards}
+              summary=${summary}
+              onUncatClick=${()=>{setTab('transactions');setTxnClassFilter('expense_uncat');}} />`}
+
+          ${tab==='transactions' && html`
+            <${TransactionsView}
+              accounts=${accounts||[]}
+              categories=${categories||[]}
+              initialClassFilter=${txnClassFilter}
+              onFilterUsed=${()=>setTxnClassFilter('')}
+              onUpdate=${reloadAll} />`}
+
+          ${tab==='recurring' && html`<${RecurringView} />`}
+
+          ${tab==='accounts' && html`
+            <${AccountsView}
+              accounts=${accounts||[]}
+              onRefresh=${refreshBalances}
+              refreshing=${refreshingBalances} />`}
+
+          ${tab==='categories' && html`
+            <${CategoriesView}
+              categories=${categories||[]}
+              onUpdate=${reloadCategories} />`}
+
+          ${tab==='rules' && html`
+            <${RulesView}
+              categories=${categories||[]} />`}
+        </div>
+      </main>
+    </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>

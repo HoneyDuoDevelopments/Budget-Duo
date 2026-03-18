@@ -38,6 +38,8 @@ services:
       TOKEN_SAM_CITI: ${TOKEN_SAM_CITI}
     volumes:
       - /home/honey-duo/.teller/certs:/app/certs:ro
+      - /home/honey-duo/.teller/certs:/app/certs:ro
+      - /home/honey-duo/Budget-Duo/backend/static:/app/static
     ports:
       - "8500:8500"
     healthcheck:

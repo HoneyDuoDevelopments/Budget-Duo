@@ -9,4 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Create static dir and copy frontend if it exists at build time
+RUN mkdir -p /app/static
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8500"]
