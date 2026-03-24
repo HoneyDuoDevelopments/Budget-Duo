@@ -60,14 +60,14 @@ class Transaction(Base):
     teller_category = Column(String, nullable=True)
 
     # V2 classification
-    txn_class = Column(String(32), nullable=True)           # expense | income | internal_transfer | cc_payment | investment_out | investment_in | debt_payment | savings_move | ignore
-    category_id = Column(String, ForeignKey("categories.id"), nullable=True)     # user assigned parent
-    subcategory_id = Column(String, ForeignKey("categories.id"), nullable=True)  # user assigned child
-    merchant_clean = Column(String(255), nullable=True)     # normalized merchant name
-    rule_id = Column(String(255), nullable=True)            # which rule classified this
-    user_verified = Column(Boolean, default=False)          # user has manually confirmed/overridden
+    txn_class = Column(String(32), nullable=True)
+    category_id = Column(String, ForeignKey("categories.id"), nullable=True)
+    subcategory_id = Column(String, ForeignKey("categories.id"), nullable=True)
+    merchant_clean = Column(String(255), nullable=True)
+    rule_id = Column(String(255), nullable=True)
+    user_verified = Column(Boolean, default=False)
 
-    # Legacy — kept for backwards compat, mapped to category_id
+    # DEPRECATED — kept for backwards compat, will be removed in V4
     custom_category = Column(String, nullable=True)
 
     txn_type = Column(String, nullable=True)
@@ -75,7 +75,7 @@ class Transaction(Base):
     is_income = Column(Boolean, default=False)
     is_recurring = Column(Boolean, default=False)
     recurring_group = Column(String, nullable=True)
-    recurring_type = Column(String(32), nullable=True)      # subscription | utility | recurring_expense | one_time
+    recurring_type = Column(String(32), nullable=True)
     raw_json = Column(Text, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
@@ -104,10 +104,10 @@ class Category(Base):
     color = Column(String, nullable=True)
     icon = Column(String, nullable=True)
     is_system = Column(Boolean, default=False)
-    budget_amount = Column(Numeric(12, 2), nullable=True)   # monthly budget target
+    budget_amount = Column(Numeric(12, 2), nullable=True)
     budget_period = Column(String(16), default="monthly")
     sort_order = Column(Integer, default=0)
-    exclude_from_spending = Column(Boolean, default=False)  # transfers, investments etc
+    exclude_from_spending = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
 
     parent = relationship("Category", remote_side=[id], foreign_keys=[parent_id])
@@ -118,17 +118,14 @@ class MerchantRule(Base):
     __tablename__ = "merchant_rules"
 
     id = Column(String, primary_key=True)
-    # Matching
-    match_type = Column(String(32), nullable=False)     # description_contains | description_starts_with | counterparty_exact
-    match_value = Column(String(512), nullable=False)   # case-insensitive match string
-    # Outputs
+    match_type = Column(String(32), nullable=False)
+    match_value = Column(String(512), nullable=False)
     txn_class = Column(String(32), nullable=True)
     category_id = Column(String, nullable=True)
     subcategory_id = Column(String, nullable=True)
-    recurring_type = Column(String(32), nullable=True)  # subscription | utility | recurring_expense | one_time
+    recurring_type = Column(String(32), nullable=True)
     merchant_clean = Column(String(255), nullable=True)
-    # Meta
-    priority = Column(Integer, default=100)             # lower = higher priority
+    priority = Column(Integer, default=100)
     is_system = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     match_count = Column(Integer, default=0)
@@ -159,7 +156,8 @@ class SyncLog(Base):
     account_id = Column(String, ForeignKey("accounts.id"), nullable=False)
     sync_type = Column(String, nullable=False)
     status = Column(String, nullable=False)
-    txns_added = Column(String, default="0")
-    txns_updated = Column(String, default="0")
+    # V3: Changed from String to Integer
+    txns_added = Column(Integer, default=0)
+    txns_updated = Column(Integer, default=0)
     error_message = Column(Text, nullable=True)
     synced_at = Column(DateTime, server_default=func.now())

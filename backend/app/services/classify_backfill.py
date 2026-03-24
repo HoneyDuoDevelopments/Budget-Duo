@@ -1,5 +1,5 @@
 """
-V2 Classification Backfill
+V3 Classification Backfill
 Run with: docker compose exec backend python -m app.services.classify_backfill
 """
 from app.db.session import SessionLocal
@@ -7,7 +7,7 @@ from app.services.classifier import classify_all
 
 
 def run():
-    print("Starting V2 classification backfill...")
+    print("Starting V3 classification backfill...")
     db = SessionLocal()
     try:
         result = classify_all(db, only_unclassified=False)
