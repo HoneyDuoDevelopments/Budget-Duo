@@ -91,7 +91,7 @@ class Transaction(Base):
     raw_json       = Column(Text, nullable=True)
     created_at     = Column(DateTime, server_default=func.now())
     updated_at     = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
+    import_source  = Column(String(32), default="teller")   
     account   = relationship("Account", back_populates="transactions")
     l1_cat    = relationship("Category", foreign_keys=[cat_l1])
     l2_cat    = relationship("Category", foreign_keys=[cat_l2])

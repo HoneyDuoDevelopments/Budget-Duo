@@ -23,6 +23,7 @@ import os
 import re
 import logging
 import uuid
+import httpx 
 
 from app.db.models import (
     Base, Account, Transaction, Category, DynamicEntry,
@@ -199,6 +200,7 @@ def _serialize_txn(t: Transaction) -> dict:
         "is_recurring":   t.is_recurring,
         "user_verified":  t.user_verified,
         "rule_id":        t.rule_id,
+        "import_source": getattr(t, 'import_source', 'teller'),
     }
 
 
@@ -959,6 +961,250 @@ def _scheduled_sync():
 # Run every hour on the hour
 scheduler.add_job(_scheduled_sync, "interval", hours=1)
 scheduler.start()
+
+# ============================================================
+# SCRAPER PROXY + IMPORT — V5
+# ============================================================
+
+SCRAPER_URL = os.environ.get("SCRAPER_URL", "http://scraper:8501")
+
+
+class ScraperAppleStartRequest(BaseModel):
+    start_date: str
+    end_date: str
+    backfill: bool = False
+
+
+class ScraperAppleVerifyRequest(BaseModel):
+    session_id: str
+    code: str
+
+
+class ImportedTransaction(BaseModel):
+    date: str
+    description: str
+    amount: float
+    account_id: Optional[str] = None
+    merchant_clean: Optional[str] = None
+    category_hint: Optional[str] = None
+    type_hint: Optional[str] = None
+    import_source: str = "apple_csv"
+    last_four: Optional[str] = None
+
+
+class ImportRequest(BaseModel):
+    account_id: str
+    transactions: list[ImportedTransaction]
+    import_source: str = "apple_csv"
+
+
+class BalanceUpdateRequest(BaseModel):
+    account_id: str
+    balance: Optional[float] = None
+    available: Optional[float] = None
+
+
+# ── Scraper proxy: Apple Card ──
+
+@app.post("/api/scrape/apple/start")
+async def scrape_apple_start(body: ScraperAppleStartRequest):
+    """Proxy to scraper service — start Apple Card scrape."""
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                f"{SCRAPER_URL}/api/scrape/apple/start",
+                json=body.model_dump(),
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+            # Log the session in our DB
+            db = SessionLocal()
+            try:
+                from app.db.models import Base
+                db.execute(text("""
+                    INSERT INTO scraper_sessions (id, provider, status, started_by)
+                    VALUES (:id, 'apple', :status, 'manual')
+                    ON CONFLICT (id) DO UPDATE SET status = :status, updated_at = NOW()
+                """), {"id": data["session_id"], "status": data["status"]})
+                db.commit()
+            finally:
+                db.close()
+
+            return data
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
+
+
+@app.post("/api/scrape/apple/verify")
+async def scrape_apple_verify(body: ScraperAppleVerifyRequest):
+    """Proxy to scraper service — submit 2FA code."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(
+                f"{SCRAPER_URL}/api/scrape/apple/verify",
+                json=body.model_dump(),
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
+
+
+# ── Scraper proxy: Synchrony ──
+
+@app.post("/api/scrape/synchrony/start")
+async def scrape_synchrony_start():
+    """Proxy to scraper service — start Synchrony scrape."""
+    try:
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            resp = await client.post(
+                f"{SCRAPER_URL}/api/scrape/synchrony/start",
+                json={},
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+            db = SessionLocal()
+            try:
+                db.execute(text("""
+                    INSERT INTO scraper_sessions (id, provider, status, started_by)
+                    VALUES (:id, 'synchrony', :status, 'manual')
+                    ON CONFLICT (id) DO UPDATE SET status = :status, updated_at = NOW()
+                """), {"id": data["session_id"], "status": data["status"]})
+                db.commit()
+            finally:
+                db.close()
+
+            return data
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
+
+
+# ── Scraper session status ──
+
+@app.get("/api/scrape/status/{session_id}")
+async def scrape_status(session_id: str):
+    """Proxy to scraper service — check session status."""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(f"{SCRAPER_URL}/api/scrape/status/{session_id}")
+            resp.raise_for_status()
+            data = resp.json()
+
+            # Update our DB record
+            db = SessionLocal()
+            try:
+                db.execute(text("""
+                    UPDATE scraper_sessions
+                    SET status = :status, updated_at = NOW(),
+                        completed_at = CASE WHEN :status IN ('complete','error') THEN NOW() ELSE completed_at END,
+                        error_message = :error
+                    WHERE id = :id
+                """), {"id": session_id, "status": data.get("status", "unknown"), "error": data.get("error")})
+                db.commit()
+            finally:
+                db.close()
+
+            return data
+    except httpx.HTTPError as e:
+        raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
+
+
+# ── Transaction import (called by scraper or manually) ──
+
+@app.post("/api/import/transactions")
+def import_transactions(body: ImportRequest, db: Session = Depends(get_db)):
+    """
+    Import scraped transactions into the transactions table.
+    Deduplicates by matching account_id + date + amount + description.
+    Runs auto-classification on new transactions.
+    """
+    account = db.get(Account, body.account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail=f"Account {body.account_id} not found")
+
+    added = 0
+    skipped = 0
+
+    for txn_data in body.transactions:
+        txn_date = txn_data.date
+        amount = Decimal(str(txn_data.amount))
+        description = txn_data.description.strip()
+
+        # Deduplicate: same account + date + amount + description prefix
+        desc_prefix = description[:50]
+        existing = db.execute(text("""
+            SELECT id FROM transactions
+            WHERE account_id = :acct
+              AND date = :dt
+              AND amount = :amt
+              AND LEFT(description, 50) = :desc
+            LIMIT 1
+        """), {
+            "acct": body.account_id,
+            "dt": txn_date,
+            "amt": str(amount),
+            "desc": desc_prefix,
+        }).fetchone()
+
+        if existing:
+            skipped += 1
+            continue
+
+        # Generate a unique ID for scraped transactions
+        txn_id = f"scrape_{body.import_source}_{uuid.uuid4().hex[:12]}"
+
+        txn = Transaction(
+            id=txn_id,
+            account_id=body.account_id,
+            amount=amount,
+            date=date.fromisoformat(txn_date),
+            description=description,
+            counterparty_name=txn_data.merchant_clean,
+            merchant_clean=txn_data.merchant_clean,
+            status="posted",
+            is_income=amount > 0 and body.import_source != "synchrony_scrape",
+            import_source=body.import_source,
+        )
+        db.add(txn)
+        db.flush()
+
+        # Run auto-classification
+        _auto_classify(db, txn)
+        added += 1
+
+    db.commit()
+    logger.info(f"Import complete: {added} added, {skipped} skipped (dupes) for {account.name}")
+    return {"ok": True, "added": added, "skipped": skipped, "account": account.name}
+
+
+# ── Balance update for scraped accounts ──
+
+@app.post("/api/scrape/balance/update")
+def update_scraped_balance(body: BalanceUpdateRequest, db: Session = Depends(get_db)):
+    """Update balance for a scraped account."""
+    account = db.get(Account, body.account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail=f"Account {body.account_id} not found")
+
+    existing = db.get(AccountBalance, body.account_id)
+    if existing:
+        if body.balance is not None:
+            existing.ledger = Decimal(str(body.balance))
+        if body.available is not None:
+            existing.available = Decimal(str(body.available))
+        existing.fetched_at = func.now()
+    else:
+        db.add(AccountBalance(
+            account_id=body.account_id,
+            ledger=Decimal(str(body.balance)) if body.balance is not None else None,
+            available=Decimal(str(body.available)) if body.available is not None else None,
+        ))
+
+    db.commit()
+    logger.info(f"Balance updated for {account.name}: ledger={body.balance}, available={body.available}")
+    return {"ok": True, "account": account.name}
 
 
 # ============================================================

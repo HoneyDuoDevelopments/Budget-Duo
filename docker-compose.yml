@@ -24,7 +24,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env.scraper
     environment:
+      SCRAPER_URL: http://scraper:8501
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       SECRET_KEY: ${SECRET_KEY}
       TELLER_CERT_PATH: /app/certs/certificate.pem
@@ -38,12 +41,30 @@ services:
       TOKEN_SAM_CITI: ${TOKEN_SAM_CITI}
     volumes:
       - /home/honey-duo/.teller/certs:/app/certs:ro
-      - /home/honey-duo/.teller/certs:/app/certs:ro
       - /home/honey-duo/Budget-Duo/backend/static:/app/static
     ports:
       - "8500:8500"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8500/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  scraper:
+    build: ./scraper
+    container_name: budget-duo-scraper
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    env_file:
+      - .env.scraper
+    environment:
+      BACKEND_URL: http://backend:8500
+    ports:
+      - "8501:8501"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8501/health').raise_for_status()"]
       interval: 30s
       timeout: 10s
       retries: 3
