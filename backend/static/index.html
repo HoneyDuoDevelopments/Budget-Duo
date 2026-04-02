@@ -4,241 +4,219 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Budget Duo</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0a0e14;--bg2:#0f1520;--bg3:#161e2e;--bg4:#1e2a3d;--bg5:#253348;
-  --border:#1e2a3d;--border2:#253348;--border3:#2d3f5a;
-  --text:#e2eaf6;--text2:#8899b8;--text3:#4a5a78;--text4:#2d3f5a;
-  --green:#2dd4a0;--green-dim:rgba(45,212,160,0.1);--green-border:rgba(45,212,160,0.25);
-  --red:#f5627a;--red-dim:rgba(245,98,122,0.1);--red-border:rgba(245,98,122,0.25);
-  --amber:#f0a429;--amber-dim:rgba(240,164,41,0.1);--amber-border:rgba(240,164,41,0.25);
-  --blue:#4d9fff;--blue-dim:rgba(77,159,255,0.1);--blue-border:rgba(77,159,255,0.25);
-  --purple:#a78bfa;--purple-dim:rgba(167,139,250,0.1);
-  --cyan:#22d3ee;--cyan-dim:rgba(34,211,238,0.08);
-  --radius:6px;--radius-lg:10px;
-  --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;
-  --sidebar:220px;
+  --bg:#07090d;--s1:#0d1117;--s2:#111820;--s3:#161f2a;--s4:#1b2638;--s5:#21303f;
+  --ln:#1b2638;--ln2:#243347;--ln3:#2e4058;
+  --t1:#dce8f5;--t2:#7a90aa;--t3:#3d5268;--t4:#1e2f40;
+  --green:#00e5a0;--gd:rgba(0,229,160,.08);--gb:rgba(0,229,160,.2);
+  --red:#ff5272;--rd:rgba(255,82,114,.08);--rb:rgba(255,82,114,.2);
+  --amber:#ffb340;--ad:rgba(255,179,64,.08);--ab:rgba(255,179,64,.2);
+  --blue:#3d9eff;--bd:rgba(61,158,255,.08);--bb:rgba(61,158,255,.2);
+  --purple:#b388ff;--pd:rgba(179,136,255,.08);--pb:rgba(179,136,255,.2);
+  --cyan:#00d4e8;--cd:rgba(0,212,232,.07);
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+  --r:4px;--r2:8px;--sidebar:244px;
 }
-html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 #root{height:100%}
-
-/* ── Layout ── */
-.app{display:grid;grid-template-columns:var(--sidebar) 1fr;grid-template-rows:1fr;height:100vh;overflow:hidden}
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
-.main{overflow-y:auto;background:var(--bg)}
-
-/* ── Sidebar ── */
-.sidebar-logo{padding:20px 20px 8px;display:flex;align-items:center;gap:10px}
-.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--green),var(--blue));border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:12px;font-weight:500;color:#0a0e14;flex-shrink:0}
-.logo-text{font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:-0.3px}
-.logo-text span{color:var(--green)}
-.sidebar-section{padding:16px 12px 4px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1.2px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);margin:1px 8px;cursor:pointer;transition:all 0.12s;color:var(--text2);font-size:13px;border:none;background:none;width:calc(100% - 16px);text-align:left}
-.nav-item:hover{background:var(--bg3);color:var(--text)}
-.nav-item.active{background:var(--blue-dim);color:var(--blue);border:1px solid var(--blue-border)}
-.nav-icon{width:16px;height:16px;opacity:0.7;flex-shrink:0}
-.nav-item.active .nav-icon{opacity:1}
-.nav-badge{margin-left:auto;background:var(--red-dim);color:var(--red);border:1px solid var(--red-border);font-size:10px;font-family:var(--mono);padding:1px 6px;border-radius:10px;min-width:20px;text-align:center}
-.sidebar-footer{margin-top:auto;padding:12px}
-.sync-btn{width:100%;background:var(--bg3);border:1px solid var(--border3);color:var(--text2);font-family:var(--mono);font-size:11px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px;justify-content:center}
-.sync-btn:hover{border-color:var(--green);color:var(--green)}
-.sync-btn.syncing{color:var(--amber);border-color:var(--amber-border);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
-
-/* ── Page header ── */
-.page-header{padding:24px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-.page-title{font-size:20px;font-weight:600;letter-spacing:-0.3px}
-.page-sub{font-size:12px;color:var(--text3);margin-top:2px;font-family:var(--mono)}
-.page-content{padding:20px 28px 32px;display:flex;flex-direction:column;gap:18px}
-
-/* ── Summary cards ── */
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;position:relative;overflow:hidden}
-.sum-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius-lg) var(--radius-lg) 0 0}
-.sum-card.green::before{background:linear-gradient(90deg,var(--green),transparent)}
-.sum-card.red::before{background:linear-gradient(90deg,var(--red),transparent)}
-.sum-card.amber::before{background:linear-gradient(90deg,var(--amber),transparent)}
-.sum-card.blue::before{background:linear-gradient(90deg,var(--blue),transparent)}
-.sum-card.purple::before{background:linear-gradient(90deg,var(--purple),transparent)}
-.sum-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
-.sum-value{font-family:var(--mono);font-size:22px;font-weight:500;letter-spacing:-0.5px}
-.sum-value.green{color:var(--green)}
-.sum-value.red{color:var(--red)}
-.sum-value.amber{color:var(--amber)}
-.sum-value.blue{color:var(--blue)}
-.sum-value.purple{color:var(--purple)}
-.sum-sub{font-size:11px;color:var(--text3);margin-top:5px;font-family:var(--mono)}
-.sum-alert{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);color:var(--amber);background:var(--amber-dim);border:1px solid var(--amber-border);padding:2px 7px;border-radius:10px;margin-top:6px;cursor:pointer}
-
-/* ── Panel / table ── */
-.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
-.panel-header{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
-.panel-title{font-size:12px;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:0.8px}
-.panel-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-
-/* ── Filters bar ── */
-.filters-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.search-wrap{position:relative;flex:1;min-width:200px}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);width:14px;height:14px;pointer-events:none}
-.search-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;padding:6px 10px 6px 32px;border-radius:var(--radius);width:100%;outline:none;transition:border-color 0.15s}
-.search-input:focus{border-color:var(--blue)}
-.search-input::placeholder{color:var(--text3)}
-.filter-pill{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:var(--radius);outline:none;cursor:pointer;transition:all 0.12s;white-space:nowrap}
-.filter-pill:focus,.filter-pill:hover{border-color:var(--blue-border);color:var(--text)}
-.filter-pill.active-filter{border-color:var(--blue-border);background:var(--blue-dim);color:var(--blue)}
-.count-badge{font-size:11px;color:var(--text3);font-family:var(--mono);white-space:nowrap;padding:0 4px}
-
-/* ── Table ── */
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:700px}
-th{text-align:left;padding:8px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap;background:var(--bg2)}
-td{padding:8px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,0.015)}
-tr.is-income td{background:rgba(45,212,160,0.025)}
-tr.is-transfer td{opacity:0.5}
-tr.is-ignored td{opacity:0.35}
-.td-date{font-family:var(--mono);font-size:11px;color:var(--text2);white-space:nowrap}
-.td-merchant{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-.td-raw{font-size:11px;color:var(--text3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;font-family:var(--mono)}
-.td-amount{font-family:var(--mono);font-size:13px;font-weight:500;text-align:right;white-space:nowrap}
-.td-amount.pos{color:var(--green)}
-.td-amount.neg{color:var(--text)}
-.td-amount.transfer{color:var(--text3)}
-.td-badges{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-.badge{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:10px;font-weight:400;white-space:nowrap;border:1px solid transparent}
-.badge-income{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
-.badge-transfer{background:var(--bg4);color:var(--text3)}
-.badge-cc{background:var(--bg4);color:var(--text3)}
-.badge-invest{background:var(--purple-dim);color:var(--purple)}
-.badge-sub{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
-.badge-utility{background:var(--cyan-dim);color:var(--cyan)}
-.badge-sam{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border)}
-.badge-jess{background:var(--green-dim);color:var(--green);border-color:var(--green-border)}
-.badge-joint{background:var(--blue-dim);color:var(--blue);border-color:var(--blue-border)}
-.badge-pending{background:var(--bg4);color:var(--amber)}
-
-/* ── Category selects in table ── */
-.cat-cell{display:flex;flex-direction:column;gap:3px}
-.cat-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:3px 7px;border-radius:var(--radius);outline:none;cursor:pointer;max-width:160px;transition:border-color 0.12s}
-.cat-select:hover,.cat-select:focus{border-color:var(--blue-border)}
-.cat-select.assigned{color:var(--text);border-color:var(--border3)}
-
-/* ── Class select ── */
-.class-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:var(--radius);outline:none;cursor:pointer;transition:border-color 0.12s}
-.class-select:hover,.class-select:focus{border-color:var(--blue-border)}
-.class-select.expense{color:var(--text)}
-.class-select.income{color:var(--green)}
-.class-select.internal_transfer,.class-select.cc_payment,.class-select.savings_move{color:var(--text3)}
-.class-select.investment_in,.class-select.investment_out{color:var(--purple)}
-.class-select.debt_payment{color:var(--amber)}
-.class-select.ignore{color:var(--text4)}
-
-/* ── Pagination ── */
-.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border)}
-.page-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:11px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;transition:all 0.12s}
-.page-btn:hover:not(:disabled){border-color:var(--blue-border);color:var(--blue)}
-.page-btn:disabled{opacity:0.3;cursor:not-allowed}
-.page-info{font-size:11px;color:var(--text3);font-family:var(--mono)}
-
-/* ── Account cards ── */
-.accounts-row{display:flex;gap:8px;flex-wrap:wrap}
-.acct-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 16px;cursor:pointer;transition:all 0.15s;min-width:150px;flex:1}
-.acct-card:hover{border-color:var(--border3)}
-.acct-card.selected{border-color:var(--blue);background:var(--blue-dim)}
-.acct-card.all-card{flex:0;min-width:80px}
-.acct-name{font-size:12px;font-weight:500;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.acct-inst{font-size:11px;color:var(--text2);margin-bottom:6px;font-family:var(--mono)}
-.acct-balance{font-family:var(--mono);font-size:14px;font-weight:500;margin-bottom:4px}
-.acct-balance.checking{color:var(--blue)}
-.acct-balance.credit{color:var(--red)}
-.acct-balance.savings{color:var(--green)}
-.acct-badges{display:flex;gap:4px;flex-wrap:wrap}
-
-/* ── Recurring cards ── */
-.recurring-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
-.rec-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;transition:border-color 0.15s}
-.rec-card:hover{border-color:var(--border3)}
-.rec-type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;display:inline-block;margin-right:6px}
-.rec-merchant{font-size:13px;font-weight:500;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center}
-.rec-stats{display:flex;gap:14px}
-.rec-stat-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px}
-.rec-stat-value{font-family:var(--mono);font-size:16px;font-weight:500;margin-top:2px}
-.rec-last{font-size:10px;color:var(--text3);margin-top:8px;font-family:var(--mono)}
-
-/* ── Category management ── */
-.cat-tree{display:flex;flex-direction:column;gap:2px}
-.cat-parent-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);background:var(--bg3);cursor:pointer;user-select:none}
-.cat-parent-row:hover{background:var(--bg4)}
-.cat-color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.cat-row-name{font-size:13px;font-weight:500;flex:1}
-.cat-row-budget{font-family:var(--mono);font-size:11px;color:var(--text3)}
-.cat-row-actions{display:flex;gap:6px;opacity:0;transition:opacity 0.12s}
-.cat-parent-row:hover .cat-row-actions,.cat-child-row:hover .cat-row-actions{opacity:1}
-.cat-children{margin-left:20px;margin-top:2px;display:flex;flex-direction:column;gap:2px;border-left:1px solid var(--border);padding-left:12px}
-.cat-child-row{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:var(--radius);cursor:pointer}
-.cat-child-row:hover{background:var(--bg3)}
-.icon-btn{background:none;border:1px solid transparent;color:var(--text3);font-size:11px;font-family:var(--mono);padding:3px 8px;border-radius:var(--radius);cursor:pointer;transition:all 0.12s}
-.icon-btn:hover{border-color:var(--border3);color:var(--text)}
-.icon-btn.danger:hover{border-color:var(--red-border);color:var(--red)}
-
-/* ── Forms ── */
-.form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
-.form-group{display:flex;flex-direction:column;gap:5px}
-.form-label{font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.8px}
-.form-input{background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-family:var(--sans);font-size:13px;padding:7px 11px;border-radius:var(--radius);outline:none;transition:border-color 0.15s;min-width:180px}
-.form-input:focus{border-color:var(--blue)}
-.form-input::placeholder{color:var(--text3)}
-.form-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:var(--radius);outline:none;cursor:pointer}
-.form-select:focus{border-color:var(--blue)}
-.color-input{width:38px;height:34px;border:1px solid var(--border2);border-radius:var(--radius);padding:2px;background:var(--bg3);cursor:pointer}
-.btn{font-family:var(--mono);font-size:12px;padding:7px 16px;border-radius:var(--radius);cursor:pointer;transition:all 0.15s;border:1px solid transparent}
-.btn-primary{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue)}
-.btn-primary:hover{background:var(--blue);color:#0a0e14}
-.btn-success{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
-.btn-success:hover{background:var(--green);color:#0a0e14}
-.btn-ghost{background:none;border-color:var(--border2);color:var(--text2)}
-.btn-ghost:hover{border-color:var(--border3);color:var(--text)}
-.btn:disabled{opacity:0.4;cursor:not-allowed}
-.err-msg{color:var(--red);font-size:11px;font-family:var(--mono);margin-top:4px}
-
-/* ── Rules view ── */
-.rule-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);transition:background 0.1s}
-.rule-row:hover{background:var(--bg3)}
-.rule-row:last-child{border-bottom:none}
-.rule-match{font-family:var(--mono);font-size:11px;color:var(--text2);flex:1;min-width:0}
-.rule-match-val{color:var(--text);font-weight:500}
-.rule-outputs{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
-.rule-pill{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;border:1px solid var(--border3);color:var(--text2);white-space:nowrap}
-.rule-pill.class{border-color:var(--blue-border);color:var(--blue);background:var(--blue-dim)}
-.rule-pill.cat{border-color:var(--green-border);color:var(--green);background:var(--green-dim)}
-.rule-pill.rec{border-color:var(--amber-border);color:var(--amber);background:var(--amber-dim)}
-.rule-count{font-family:var(--mono);font-size:10px;color:var(--text3);white-space:nowrap;min-width:50px;text-align:right}
-.rule-system-badge{font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px;background:var(--bg4);color:var(--text3);flex-shrink:0}
-
-/* ── Misc ── */
-.loading,.empty{padding:40px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px}
-.section-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.verified-dot{width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;vertical-align:middle;opacity:0.7}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:var(--border3)}
-
-/* ── Budget progress ── */
-.budget-bar-wrap{margin-top:8px}
-.budget-bar-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden}
-.budget-bar-fill{height:100%;border-radius:2px;transition:width 0.3s}
-.budget-bar-fill.ok{background:var(--green)}
-.budget-bar-fill.warn{background:var(--amber)}
-.budget-bar-fill.over{background:var(--red)}
-.budget-pct{font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:3px}
+::-webkit-scrollbar-thumb{background:var(--s5);border-radius:2px}
+.app{display:grid;grid-template-columns:var(--sidebar) 1fr;height:100vh;overflow:hidden}
+.sidebar{background:var(--s1);border-right:1px solid var(--ln);display:flex;flex-direction:column;overflow-y:auto}
+.main{overflow-y:auto;background:var(--bg)}
+.sb-brand{padding:20px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--ln)}
+.sb-logo{width:28px;height:28px;background:var(--green);border-radius:var(--r);display:grid;place-items:center;flex-shrink:0}
+.sb-logo svg{width:14px;height:14px;fill:var(--bg)}
+.sb-title{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.3px}
+.sb-title span{color:var(--green)}
+.sb-sec{padding:14px 16px 4px;font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1.5px}
+.nav{display:flex;align-items:center;gap:9px;padding:7px 10px;margin:1px 6px;border-radius:var(--r);cursor:pointer;color:var(--t2);font-size:13px;border:none;background:none;width:calc(100% - 12px);text-align:left;transition:all .1s}
+.nav:hover{background:var(--s2);color:var(--t1)}
+.nav.on{background:var(--gd);color:var(--green);border:1px solid var(--gb)}
+.nav svg{width:14px;height:14px;flex-shrink:0;opacity:.6}
+.nav.on svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--rd);color:var(--red);border:1px solid var(--rb);font-size:9px;font-family:var(--mono);padding:1px 5px;border-radius:3px}
+.sb-period{margin:10px 8px;background:var(--s2);border:1px solid var(--ln2);border-radius:var(--r2);padding:12px}
+.sb-period-label{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.period-toggle{display:flex;background:var(--s3);border-radius:var(--r);padding:2px;margin-bottom:8px}
+.period-btn{flex:1;font-family:var(--mono);font-size:10px;padding:4px;border:none;background:none;color:var(--t2);cursor:pointer;border-radius:3px;transition:all .1s}
+.period-btn.on{background:var(--s5);color:var(--t1)}
+.period-row{display:flex;gap:4px}
+.period-sel{flex:1;background:var(--s3);border:1px solid var(--ln2);color:var(--t1);font-family:var(--mono);font-size:11px;padding:5px 7px;border-radius:var(--r);outline:none;cursor:pointer}
+.period-sel:focus{border-color:var(--bb)}
+.sb-bottom{margin-top:auto;padding:10px}
+.sync-btn{width:100%;background:var(--s2);border:1px solid var(--ln2);color:var(--t2);font-family:var(--mono);font-size:11px;padding:9px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;gap:7px;justify-content:center;transition:all .15s}
+.sync-btn:hover{border-color:var(--gb);color:var(--green)}
+.sync-btn.busy{color:var(--amber);border-color:var(--ab);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+.topbar{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between}
+.topbar-title{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.topbar-sub{font-family:var(--mono);font-size:11px;color:var(--t3);margin-top:2px}
+.content{padding:16px 24px 40px;display:flex;flex-direction:column;gap:14px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kpi{background:var(--s1);border:1px solid var(--ln);border-radius:var(--r2);padding:14px 16px;position:relative;overflow:hidden;cursor:default}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r2) var(--r2) 0 0}
+.kpi.g::after{background:linear-gradient(90deg,var(--green),transparent 70%)}
+.kpi.r::after{background:linear-gradient(90deg,var(--red),transparent 70%)}
+.kpi.b::after{background:linear-gradient(90deg,var(--blue),transparent 70%)}
+.kpi.a::after{background:linear-gradient(90deg,var(--amber),transparent 70%)}
+.kpi.p::after{background:linear-gradient(90deg,var(--purple),transparent 70%)}
+.kpi.c::after{background:linear-gradient(90deg,var(--cyan),transparent 70%)}
+.kpi-label{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:var(--t3);margin-bottom:8px}
+.kpi-val{font-family:var(--mono);font-size:20px;font-weight:600;letter-spacing:-.5px;line-height:1}
+.kpi-val.g{color:var(--green)}.kpi-val.r{color:var(--red)}.kpi-val.b{color:var(--blue)}
+.kpi-val.a{color:var(--amber)}.kpi-val.p{color:var(--purple)}.kpi-val.c{color:var(--cyan)}
+.kpi-sub{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:5px}
+.kpi-alert{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9px;color:var(--amber);background:var(--ad);border:1px solid var(--ab);padding:2px 6px;border-radius:3px;margin-top:5px;cursor:pointer}
+.panel{background:var(--s1);border:1px solid var(--ln);border-radius:var(--r2);overflow:hidden}
+.ph{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--ln);min-height:42px}
+.ph-title{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t2)}
+.ph-stat{font-family:var(--mono);font-size:11px;color:var(--t3)}
+.ph-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.fbar{display:flex;align-items:center;gap:6px;padding:8px 12px;border-bottom:1px solid var(--ln);flex-wrap:wrap}
+.sw{position:relative;flex:1;min-width:160px}
+.sw svg{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--t3);width:12px;height:12px;pointer-events:none}
+.si{background:var(--s2);border:1px solid var(--ln2);color:var(--t1);font-family:var(--sans);font-size:12px;padding:5px 8px 5px 27px;border-radius:var(--r);width:100%;outline:none;transition:border-color .12s}
+.si:focus{border-color:var(--bb)}
+.si::placeholder{color:var(--t3)}
+.fp{background:var(--s2);border:1px solid var(--ln2);color:var(--t2);font-family:var(--mono);font-size:10px;padding:5px 8px;border-radius:var(--r);outline:none;cursor:pointer;white-space:nowrap;-webkit-appearance:none;appearance:none;transition:all .1s}
+.fp:hover,.fp:focus{border-color:var(--bb);color:var(--t1)}
+.fp.on{border-color:var(--bb);background:var(--bd);color:var(--blue)}
+.cbadge{font-family:var(--mono);font-size:10px;color:var(--t3);white-space:nowrap}
+.clr-btn{background:none;border:1px solid var(--ln2);color:var(--t3);font-family:var(--mono);font-size:9px;padding:4px 7px;border-radius:var(--r);cursor:pointer}
+.clr-btn:hover{color:var(--red);border-color:var(--rb)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:820px}
+th{text-align:left;padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.9px;border-bottom:1px solid var(--ln);font-weight:400;white-space:nowrap;background:var(--s1)}
+td{padding:6px 10px;border-bottom:1px solid var(--ln);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.01)}
+tr.tr-inc td{background:rgba(0,229,160,.02)}
+tr.tr-xfer td{opacity:.4}
+tr.tr-ign td{opacity:.28}
+/* saving flash */
+tr.tr-saving td{background:rgba(61,158,255,.06);transition:background .3s}
+.td-date{font-family:var(--mono);font-size:10px;color:var(--t2);white-space:nowrap}
+.td-m{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.td-raw{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.td-amt{font-family:var(--mono);font-size:12px;font-weight:600;text-align:right;white-space:nowrap}
+.td-amt.pos{color:var(--green)}.td-amt.neg{color:var(--t1)}.td-amt.xfr{color:var(--t3)}
+.td-pills{display:flex;gap:3px;flex-wrap:wrap}
+.badge{font-size:9px;font-family:var(--mono);padding:2px 5px;border-radius:3px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.b-inc{background:var(--gd);color:var(--green);border-color:var(--gb)}
+.b-xfr{background:var(--s3);color:var(--t3)}
+.b-inv{background:var(--pd);color:var(--purple)}
+.b-sub{background:var(--ad);color:var(--amber);border-color:var(--ab)}
+.b-sav{background:var(--bd);color:var(--blue);border-color:var(--bb)}
+.b-sam{background:var(--ad);color:var(--amber);border-color:var(--ab)}
+.b-jess{background:var(--gd);color:var(--green);border-color:var(--gb)}
+.b-joint{background:var(--bd);color:var(--blue);border-color:var(--bb)}
+.b-exp{background:var(--rd);color:var(--red);border-color:var(--rb)}
+.vdot{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--green);margin-left:4px;vertical-align:middle;opacity:.8}
+.isel{background:var(--s2);border:1px solid var(--ln);color:var(--t2);font-family:var(--mono);font-size:10px;padding:2px 5px;border-radius:var(--r);outline:none;cursor:pointer;margin-top:2px;display:block;width:100%;max-width:150px;transition:border-color .1s}
+.isel:hover,.isel:focus{border-color:var(--bb)}
+.isel.set{color:var(--t1);border-color:var(--ln3)}
+.isel.income{color:var(--green)}.isel.expense{color:var(--t1)}
+.isel.savings_in,.isel.savings_out{color:var(--blue)}
+.isel.investment_in,.isel.investment_out{color:var(--purple)}
+.isel.subscription{color:var(--amber)}
+.isel.internal_transfer,.isel.cc_payment,.isel.ignore{color:var(--t3)}
+.isel.trip-sel{border-color:var(--ab);color:var(--amber)}
+.col-sep{border-left:1px solid var(--ln2)}
+.pager{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--ln)}
+.pg-btn{background:var(--s2);border:1px solid var(--ln2);color:var(--t2);font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:var(--r);cursor:pointer;transition:all .1s}
+.pg-btn:hover:not(:disabled){border-color:var(--bb);color:var(--blue)}
+.pg-btn:disabled{opacity:.25;cursor:not-allowed}
+.pg-info{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.acct-strip{display:flex;gap:6px;flex-wrap:wrap}
+.ap{background:var(--s1);border:1px solid var(--ln);border-radius:var(--r2);padding:10px 13px;cursor:pointer;transition:all .12s;flex:1;min-width:120px}
+.ap:hover{border-color:var(--ln3)}
+.ap.sel{border-color:var(--blue);background:var(--bd)}
+.ap.all{flex:0;min-width:65px}
+.ap-name{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.ap-inst{font-family:var(--mono);font-size:10px;color:var(--t2);margin-bottom:5px}
+.ap-bal{font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:3px}
+.ap-bal.chk{color:var(--blue)}.ap-bal.sav{color:var(--green)}.ap-bal.crd{color:var(--red)}
+/* Categories */
+.cat-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--r);cursor:pointer;user-select:none}
+.cat-row:hover{background:var(--s2)}
+.cat-row.l1{background:var(--s2);margin-bottom:1px}
+.cat-row.l1:hover{background:var(--s3)}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cat-name{font-size:13px;font-weight:500;flex:1}
+.cat-bud{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.cat-acts{display:flex;gap:4px;opacity:0;transition:opacity .1s}
+.cat-row:hover .cat-acts{opacity:1}
+.cat-children{margin-left:16px;padding-left:10px;border-left:1px solid var(--ln);margin-top:1px;display:flex;flex-direction:column;gap:1px;margin-bottom:4px}
+/* Rules */
+.rule-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--ln);transition:background .08s}
+.rule-row:hover{background:var(--s2)}
+.rule-row:last-child{border-bottom:none}
+.rule-match{font-family:var(--mono);font-size:10px;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rule-val{color:var(--t1);font-weight:600}
+.rule-pills{display:flex;gap:3px;flex-wrap:wrap;flex-shrink:0}
+.rp{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid var(--ln3);color:var(--t2);white-space:nowrap}
+.rp.cls{border-color:var(--bb);color:var(--blue);background:var(--bd)}
+.rp.cat{border-color:var(--gb);color:var(--green);background:var(--gd)}
+.rp.rec{border-color:var(--ab);color:var(--amber);background:var(--ad)}
+.rule-cnt{font-family:var(--mono);font-size:10px;color:var(--t3);white-space:nowrap;min-width:44px;text-align:right}
+.sys-tag{font-family:var(--mono);font-size:8px;padding:1px 4px;background:var(--s3);color:var(--t3);border-radius:2px}
+/* Forms */
+.form-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px}
+.fi{background:var(--s2);border:1px solid var(--ln2);color:var(--t1);font-family:var(--sans);font-size:12px;padding:6px 10px;border-radius:var(--r);outline:none;transition:border-color .12s;min-width:160px}
+.fi:focus{border-color:var(--bb)}
+.fi::placeholder{color:var(--t3)}
+.fs{background:var(--s2);border:1px solid var(--ln2);color:var(--t2);font-family:var(--mono);font-size:11px;padding:6px 10px;border-radius:var(--r);outline:none;cursor:pointer;-webkit-appearance:none;appearance:none}
+.fs:focus{border-color:var(--bb)}
+.btn{font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:var(--r);cursor:pointer;transition:all .12s;border:1px solid transparent;white-space:nowrap}
+.btn-p{background:var(--bd);border-color:var(--bb);color:var(--blue)}
+.btn-p:hover{background:var(--blue);color:var(--bg)}
+.btn-s{background:var(--gd);border-color:var(--gb);color:var(--green)}
+.btn-s:hover{background:var(--green);color:var(--bg)}
+.btn-g{background:none;border-color:var(--ln2);color:var(--t2)}
+.btn-g:hover{border-color:var(--ln3);color:var(--t1)}
+.btn-d{background:var(--rd);border-color:var(--rb);color:var(--red)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.err{color:var(--red);font-family:var(--mono);font-size:10px;margin-top:4px}
+/* Trend */
+.trend-wrap{padding:16px}
+.trend-bars{display:flex;align-items:flex-end;gap:6px;height:80px}
+.trend-month{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.trend-bar-wrap{display:flex;gap:2px;align-items:flex-end;height:64px;width:100%}
+.trend-bar{flex:1;border-radius:2px 2px 0 0;min-height:2px;transition:height .3s}
+.trend-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);text-align:center}
+/* Spending */
+.spend-row{display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--ln)}
+.spend-row:last-child{border-bottom:none}
+.spend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.spend-name{font-size:12px;flex:1}
+.spend-sub{font-size:11px;color:var(--t2);margin-left:4px}
+.spend-bar-wrap{flex:2;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.spend-bar{height:100%;border-radius:2px}
+.spend-amt{font-family:var(--mono);font-size:11px;font-weight:600;text-align:right;white-space:nowrap;min-width:70px}
+.spend-pct{font-family:var(--mono);font-size:9px;color:var(--t3);min-width:34px;text-align:right}
+/* Dynamic entries */
+.entry-row{display:flex;align-items:center;gap:8px;padding:7px 12px;border-bottom:1px solid var(--ln)}
+.entry-row:last-child{border-bottom:none}
+.entry-type-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.entry-name{flex:1;font-size:13px}
+.loading,.empty{padding:40px;text-align:center;color:var(--t3);font-family:var(--mono);font-size:12px}
+.sec-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:6px}
+.divider{border:none;border-top:1px solid var(--ln);margin:12px 0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.icon-btn{background:none;border:1px solid transparent;color:var(--t3);font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:var(--r);cursor:pointer;transition:all .1s}
+.icon-btn:hover{border-color:var(--ln3);color:var(--t1)}
+.icon-btn.del:hover{border-color:var(--rb);color:var(--red)}
+.icon-btn.edit-active{border-color:var(--bb);color:var(--blue);background:var(--bd)}
 </style>
 </head>
 <body>
@@ -247,17 +225,16 @@ tr.is-ignored td{opacity:0.35}
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/htm@3/dist/htm.umd.js"></script>
 <script>
-const { useState, useEffect, useCallback, useMemo, useRef } = React;
+const {useState,useEffect,useCallback,useMemo,useRef} = React;
 const html = htm.bind(React.createElement);
-const API = 'http://192.168.0.245:8500';
 
-// ── Formatters ──
-const fmt = n => '$' + Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-const fmtSigned = n => (n>=0?'+':'-') + fmt(n);
-const fmtDate = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
-const fmtDateFull = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+const API = '';
 
-const shortName = name => name
+const fmt  = n => '$' + Math.abs(Number(n)||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtD = d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+const shortName = n => n
   .replace('Adv Plus Banking','Checking')
   .replace('Adv SafeBalance Banking','SafeBalance')
   .replace('Advantage Savings','Savings')
@@ -265,946 +242,1201 @@ const shortName = name => name
   .replace('Customized Cash Rewards Visa Signature','Custom Cash')
   .replace('Costco Anywhere Visa® Card by Citi','Costco Visa')
   .replace('Amex EveryDay® Card','Amex EveryDay')
-  .replace('360 Performance Savings','360 Savings');
+  .replace('360 Performance Savings','360 Savings')
+  .replace('360 Checking','Cap1 Checking');
 
 const TXN_CLASSES = [
-  {value:'expense',        label:'Expense'},
-  {value:'income',         label:'Income'},
-  {value:'internal_transfer', label:'Internal Transfer'},
-  {value:'cc_payment',     label:'CC Payment'},
-  {value:'investment_in',  label:'Investment In'},
-  {value:'investment_out', label:'Investment Out'},
-  {value:'debt_payment',   label:'Debt Payment'},
-  {value:'savings_move',   label:'Savings Move'},
-  {value:'ignore',         label:'Ignore'},
+  {v:'income',label:'Income'},{v:'expense',label:'Expense'},
+  {v:'savings_in',label:'Savings In'},{v:'savings_out',label:'Savings Out'},
+  {v:'investment_in',label:'Investment In'},{v:'investment_out',label:'Investment Out'},
+  {v:'subscription',label:'Subscription'},{v:'internal_transfer',label:'Internal Transfer'},
+  {v:'cc_payment',label:'CC Payment'},{v:'ignore',label:'Ignore'},
 ];
 
 const RECURRING_TYPES = [
-  {value:'',                label:'— not recurring —'},
-  {value:'subscription',    label:'Subscription'},
-  {value:'utility',         label:'Utility'},
-  {value:'recurring_expense', label:'Regular Expense'},
-  {value:'one_time',        label:'One-time'},
+  {v:'subscription',label:'Subscription'},{v:'utility',label:'Utility'},
+  {v:'recurring_expense',label:'Recurring Expense'},{v:'one_time',label:'One Time'},
+  {v:'cancelled',label:'Cancelled'},
 ];
 
-const CLASS_COLORS = {
-  expense: '',
-  income: 'income',
-  internal_transfer: 'transfer',
-  cc_payment: 'cc',
-  investment_in: 'invest',
-  investment_out: 'invest',
-  debt_payment: 'amber',
-  savings_move: 'transfer',
-  ignore: '',
+// All transaction types can have categories — N/A is a user choice not a system lock
+
+const L1MAP = {
+  income:'inc',expense:'exp',subscription:'sub',savings_in:'sav_in',savings_out:'sav_out',
+  investment_in:'inv_in',investment_out:'inv_out',cc_payment:'cc_payment',
+  internal_transfer:'transfer',ignore:'ignore',
 };
 
-// ── API helpers ──
-const apiFetch = (path, opts={}) => fetch(`${API}${path}`, {
-  headers:{'Content-Type':'application/json'},
-  ...opts,
-  body: opts.body ? JSON.stringify(opts.body) : undefined,
-}).then(r => r.json());
+async function apiFetch(path, opts={}) {
+  const res = await fetch(`${API}${path}`, {
+    credentials: 'include',
+    headers: {'Content-Type':'application/json'},
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({detail:'Unknown error'}));
+    throw new Error(err.detail || res.statusText);
+  }
+  return res.json();
+}
 
-// ── useAPI hook ──
 function useAPI(path, deps=[]) {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [data,setData]       = useState(null);
+  const [loading,setLoading] = useState(true);
+  const [error,setError]     = useState(null);
   const load = useCallback(async () => {
     if (!path) return;
     setLoading(true);
-    try {
-      const d = await apiFetch(path);
-      setData(d);
-      setError(null);
-    } catch(e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
+    try { setData(await apiFetch(path)); setError(null); }
+    catch(e) { setError(e.message); }
+    finally { setLoading(false); }
   }, [path, ...deps]);
   useEffect(()=>{load();},[load]);
-  return {data, loading, error, reload: load};
+  return {data, loading, error, reload:load};
 }
 
-// ══════════════════════════════════════════════════════
-// COMPONENTS
-// ══════════════════════════════════════════════════════
+const today = new Date();
+const CUR_YEAR  = today.getFullYear();
+const CUR_MONTH = today.getMonth()+1;
 
-function OwnerBadge({owner}) {
-  return html`<span className=${`badge badge-${owner}`}>${owner}</span>`;
+function OB({owner}) {
+  const cls = {sam:'b-sam',jess:'b-jess',joint:'b-joint'}[owner]||'';
+  return owner ? html`<span className=${`badge ${cls}`}>${owner}</span>` : null;
 }
 
-function ClassBadge({cls}) {
+function CB({cls}) {
   if (!cls) return null;
   const map = {
-    income: html`<span className="badge badge-income">income</span>`,
-    internal_transfer: html`<span className="badge badge-transfer">transfer</span>`,
-    cc_payment: html`<span className="badge badge-cc">cc pmt</span>`,
-    investment_in: html`<span className="badge badge-invest">invest in</span>`,
-    investment_out: html`<span className="badge badge-invest">invest out</span>`,
-    savings_move: html`<span className="badge badge-transfer">savings</span>`,
-    debt_payment: html`<span className="badge badge-sub">debt pmt</span>`,
-    ignore: html`<span className="badge" style=${{color:'var(--text4)'}}>ignore</span>`,
+    income:html`<span className="badge b-inc">income</span>`,
+    savings_in:html`<span className="badge b-sav">sav in</span>`,
+    savings_out:html`<span className="badge b-sav">sav out</span>`,
+    investment_in:html`<span className="badge b-inv">inv in</span>`,
+    investment_out:html`<span className="badge b-inv">inv out</span>`,
+    subscription:html`<span className="badge b-sub">sub</span>`,
+    internal_transfer:html`<span className="badge b-xfr">transfer</span>`,
+    cc_payment:html`<span className="badge b-xfr">cc pmt</span>`,
+    ignore:html`<span className="badge" style=${{color:'var(--t4)'}}>ignore</span>`,
   };
-  return map[cls] || null;
+  return map[cls]||null;
 }
 
-function RecurringBadge({type}) {
-  if (!type) return null;
-  if (type==='subscription') return html`<span className="badge badge-sub">sub</span>`;
-  if (type==='utility') return html`<span className="badge badge-utility">utility</span>`;
-  if (type==='recurring_expense') return html`<span className="badge badge-cc">recurring</span>`;
-  return null;
-}
+// ══════════════════════════════════════════════
+// SPENDING BREAKDOWN — flat dropdown all levels
+// ══════════════════════════════════════════════
+function SpendingBreakdown({cats, total, allCategories, dynEntries}) {
+  const [filterKey, setFilterKey] = useState('');
 
-// ── Summary Cards ──
-function SummaryCards({summary, onUncatClick}) {
-  if (!summary) return html`<div className="summary-grid">${[0,1,2,3].map(i=>html`<div key=${i} className="sum-card"><div className="loading" style=${{padding:'20px 0'}}>···</div></div>`)}</div>`;
-  const net = summary.income_mtd - summary.spending_mtd;
-  return html`
-    <div className="summary-grid">
-      <div className="sum-card green">
-        <div className="sum-label">Income MTD</div>
-        <div className="sum-value green">${fmt(summary.income_mtd)}</div>
-        <div className="sum-sub">Tesla payroll</div>
-      </div>
-      <div className="sum-card red">
-        <div className="sum-label">Real Spending MTD</div>
-        <div className="sum-value red">${fmt(summary.spending_mtd)}</div>
-        ${summary.uncategorized_count > 0 && html`
-          <div className="sum-alert" onClick=${onUncatClick}>
-            ⚠ ${summary.uncategorized_count} uncategorized
-          </div>`}
-      </div>
-      <div className="sum-card blue">
-        <div className="sum-label">Cash on Hand</div>
-        <div className="sum-value blue">${fmt(summary.cash_on_hand || 0)}</div>
-        <div className="sum-sub">Checking accounts</div>
-      </div>
-      <div className="sum-card purple">
-        <div className="sum-label">Credit Debt</div>
-        <div className="sum-value purple">${fmt(summary.credit_debt || 0)}</div>
-        <div className="sum-sub">Paid ${fmt(summary.cc_paid_mtd)} MTD</div>
-      </div>
-    </div>`;
-}
-
-// ── Account Cards ──
-function AccountCards({accounts, selected, onSelect}) {
-  const getBalanceClass = a => {
-    if (a.type === 'credit') return 'credit';
-    if (a.is_savings) return 'savings';
-    return 'checking';
-  };
-  return html`
-    <div>
-      <div className="section-label">Accounts</div>
-      <div className="accounts-row">
-        <div className=${`acct-card all-card ${selected===null?'selected':''}`}
-          onClick=${()=>onSelect(null)}>
-          <div className="acct-name">All</div>
-          <div className="acct-inst">${accounts.length} linked</div>
-        </div>
-        ${accounts.map(a=>html`
-          <div key=${a.id} className=${`acct-card ${selected===a.id?'selected':''}`}
-            onClick=${()=>onSelect(a.id===selected?null:a.id)}>
-            <div className="acct-name">${shortName(a.name)}</div>
-            <div className="acct-inst">${a.institution} ···${a.last_four}</div>
-            ${a.balance_ledger != null && html`
-              <div className=${`acct-balance ${getBalanceClass(a)}`}>
-                ${a.type==='credit' ? fmt(Math.abs(a.balance_ledger)) : fmt(a.balance_ledger)}
-              </div>`}
-            <div className="acct-badges">
-              <${OwnerBadge} owner=${a.owner} />
-              ${a.is_savings && html`<span className="badge" style=${{color:'var(--green)',background:'var(--green-dim)'}}>savings</span>`}
-              ${a.type==='credit' && html`<span className="badge" style=${{color:'var(--text3)'}}>credit</span>`}
-            </div>
-          </div>`)}
-      </div>
-    </div>`;
-}
-
-// ── Transactions View ──
-function TransactionsView({accounts, categories, onUpdate, initialClassFilter, onFilterUsed}) {
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [search, setSearch] = useState('');
-  const [classFilter, setClassFilter] = useState('');
-  const [catFilter, setCatFilter] = useState('');
-  const [recurringFilter, setRecurringFilter] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [page, setPage] = useState(0);
-  const PAGE = 50;
-
-  // Build query string
-  const queryStr = useMemo(()=>{
-    const p = new URLSearchParams({limit:2000});
-    if (selectedAccount) p.set('account_id', selectedAccount);
-    if (ownerFilter) p.set('owner', ownerFilter);
-    return p.toString();
-  },[selectedAccount, ownerFilter]);
-
-  const {data: allTxns, loading, reload} = useAPI(`/api/transactions?${queryStr}`, [queryStr]);
-  const txns = allTxns || [];
-
-  // Apply filter from parent (e.g. clicking uncategorized alert)
-  useEffect(()=>{
-    if (initialClassFilter === 'expense_uncat') {
-      setClassFilter('expense');
-      setCatFilter('__uncat__');
-      setPage(0);
-      onFilterUsed && onFilterUsed();
+  // Build flat indented dropdown from full category tree + dynamic entries
+  const dropdownOptions = useMemo(()=>{
+    const opts = [{value:'', label:'— All spending —'}];
+    if (!allCategories || allCategories.length===0) return opts;
+    const childrenOf = {};
+    allCategories.forEach(c=>{
+      if(c.parent_id){if(!childrenOf[c.parent_id])childrenOf[c.parent_id]=[];childrenOf[c.parent_id].push(c);}
+    });
+    const dynByType = {};
+    (dynEntries||[]).forEach(e=>{if(!dynByType[e.entry_type])dynByType[e.entry_type]=[];dynByType[e.entry_type].push(e);});
+    const SPENDING_L1 = new Set(['exp','sub','inc','inv_in','inv_out','sav_in','sav_out']);
+    function walk(cats, depth) {
+      (cats||[]).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{
+        const pad = '  '.repeat(depth*2);
+        const arrow = depth===0?'' : depth===1?'› ' : '· ';
+        opts.push({value:'cat:'+c.id, label:pad+arrow+c.name, color:c.color});
+        if(c.is_dynamic_parent && c.entry_type){
+          (dynByType[c.entry_type]||[]).sort((a,b)=>a.name.localeCompare(b.name)).forEach(e=>{
+            const epad = '  '.repeat((depth+1)*2);
+            opts.push({value:'dyn:'+e.id, label:epad+'· '+e.name});
+          });
+        }
+        if(childrenOf[c.id]) walk(childrenOf[c.id], depth+1);
+      });
     }
-  },[initialClassFilter]);
+    const l1cats = allCategories.filter(c=>c.level===1&&SPENDING_L1.has(c.id));
+    walk(l1cats, 0);
+    return opts;
+  },[allCategories, dynEntries]);
 
-  const acctMap = useMemo(()=>{
-    const m={};(accounts||[]).forEach(a=>{m[a.id]=a;});return m;
-  },[accounts]);
+  // Build ancestor map: catId -> Set of all descendant IDs
+  const descendantMap = useMemo(()=>{
+    const m = {};
+    if (!allCategories) return m;
+    // Build parent->children
+    const childrenOf = {};
+    allCategories.forEach(c=>{
+      if(c.parent_id){
+        if(!childrenOf[c.parent_id]) childrenOf[c.parent_id]=[];
+        childrenOf[c.parent_id].push(c.id);
+      }
+    });
+    // For each node, collect all descendant IDs
+    function getDescendants(id) {
+      const kids = childrenOf[id]||[];
+      let all = [...kids];
+      kids.forEach(k=>{ all = all.concat(getDescendants(k)); });
+      return all;
+    }
+    allCategories.forEach(c=>{
+      m[c.id] = new Set([c.id, ...getDescendants(c.id)]);
+    });
+    return m;
+  },[allCategories]);
+
+  // Filter rows — match if selected cat is the row's cat or an ancestor of it
+  const rows = useMemo(()=>{
+    if(!cats||cats.length===0) return [];
+    if(!filterKey) return cats;
+    if(filterKey.startsWith('cat:')){
+      const id = filterKey.slice(4);
+      const desc = descendantMap[id] || new Set([id]);
+      // l1_id=cat_l2, l2_id=cat_l3, l3_id=cat_l4 in the by-category response
+      return cats.filter(c=>desc.has(c.l1_id)||desc.has(c.l2_id)||desc.has(c.l3_id));
+    }
+    if(filterKey.startsWith('dyn:')){
+      const id = filterKey.slice(4);
+      return cats.filter(c=>c.l4_id===id||c.l5_id===id);
+    }
+    return cats;
+  },[cats, filterKey, descendantMap]);
+
+  const viewTotal = rows.reduce((s,r)=>s+r.total,0);
+  const baseTotal = total||viewTotal||1;
+
+  if (!cats || cats.length===0) return html`<div className="empty">No categorized spending yet</div>`;
+
+  return html`<div>
+    <div style=${{padding:'8px 12px',borderBottom:'1px solid var(--ln)',display:'flex',alignItems:'center',gap:'8px'}}>
+      <select
+        style=${{flex:1,background:filterKey?'var(--bd)':'var(--s2)',border:'1px solid '+(filterKey?'var(--bb)':'var(--ln2)'),color:filterKey?'var(--t1)':'var(--t2)',fontFamily:'var(--mono)',fontSize:'11px',padding:'5px 8px',borderRadius:'var(--r)',outline:'none',cursor:'pointer'}}
+        value=${filterKey}
+        onChange=${e=>setFilterKey(e.target.value)}>
+        ${dropdownOptions.map((o,i)=>html`<option key=${i} value=${o.value}>${o.label}</option>`)}
+      </select>
+      ${filterKey&&html`<button
+        style=${{background:'none',border:'1px solid var(--ln2)',color:'var(--t3)',fontFamily:'var(--mono)',fontSize:'9px',padding:'3px 8px',borderRadius:'var(--r)',cursor:'pointer',whiteSpace:'nowrap'}}
+        onClick=${()=>setFilterKey('')}>clear</button>`}
+      ${filterKey&&html`<span style=${{fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t3)',whiteSpace:'nowrap'}}>${fmt(viewTotal)} <span style=${{color:'var(--t4)'}}>of ${fmt(total)}</span></span>`}
+    </div>
+    ${rows.length===0
+      ? html`<div className="empty">No spending in this category</div>`
+      : rows.slice(0,25).map((c,i)=>html`
+        <div key=${i} className="spend-row">
+          <div className="spend-dot" style=${{background:c.color||'var(--t3)'}}/>
+          <div className="spend-name">
+            <span style=${{fontWeight:'500'}}>${c.l1_name}</span>
+            ${c.l2_name&&c.l2_name!==c.l1_name&&html`<span className="spend-sub"> › ${c.l2_name}</span>`}
+            ${c.l3_name&&html`<span className="spend-sub"> › ${c.l3_name}</span>`}
+          </div>
+          <div className="spend-bar-wrap">
+            <div className="spend-bar" style=${{width:Math.max(Math.round((c.total/baseTotal)*100),1)+'%',background:c.color||'var(--blue)'}}/>
+          </div>
+          <div className="spend-amt">${fmt(c.total)}</div>
+          <div className="spend-pct">${baseTotal>0?Math.round(c.total/baseTotal*100):0}%</div>
+        </div>`)}
+    ${rows.length>25&&html`
+      <div style=${{padding:'8px 14px',fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t3)',borderTop:'1px solid var(--ln)'}}>
+        +${rows.length-25} more — filter to narrow down
+      </div>`}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════
+// OVERVIEW PAGE
+// ══════════════════════════════════════════════
+function OverviewPage({period, year, month, onGoToTxns, refreshKey=0}) {
+  const summaryPath = period==='year'
+    ? `/api/summary?period=year&year=${year}`
+    : `/api/summary?period=month&year=${year}&month=${month}`;
+  const catPath = period==='year'
+    ? `/api/summary/by-category?period=year&year=${year}`
+    : `/api/summary/by-category?period=month&year=${year}&month=${month}`;
+
+  const {data:sum, loading:sumLoading} = useAPI(summaryPath,[summaryPath, refreshKey]);
+  const {data:cats} = useAPI(catPath,[catPath, refreshKey]);
+  const {data:trend} = useAPI('/api/summary/monthly-trend?months=12',[refreshKey]);
+  const {data:allCategories} = useAPI('/api/categories');
+  const {data:dynEntries} = useAPI('/api/dynamic-entries');
+
+  if (sumLoading) return html`<div className="loading">Loading...</div>`;
+  const s = sum || {};
+  const maxTrend = trend ? Math.max(...trend.map(r=>Math.max(r.income,r.spending)),1) : 1;
+
+  return html`
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <div className="kpi-grid">
+        <div className="kpi g"><div className="kpi-label">Income</div><div className="kpi-val g">${fmt(s.income)}</div><div className="kpi-sub">Tesla payroll + other</div></div>
+        <div className="kpi r">
+          <div className="kpi-label">Spending</div><div className="kpi-val r">${fmt(s.spending)}</div>
+          ${s.uncategorized_count>0&&html`<div className="kpi-alert" onClick=${()=>onGoToTxns('uncat')}>⚠ ${s.uncategorized_count} uncategorized</div>`}
+        </div>
+        <div className="kpi b"><div className="kpi-label">Savings In</div><div className="kpi-val b">${fmt(s.savings_in)}</div><div className="kpi-sub">Bal: ${fmt(s.savings_balance)}</div></div>
+        <div className="kpi a"><div className="kpi-label">Savings Out</div><div className="kpi-val a">${fmt(s.savings_out)}</div></div>
+      </div>
+      <div className="kpi-grid">
+        <div className="kpi p"><div className="kpi-label">Investment In</div><div className="kpi-val p">${fmt(s.investment_in)}</div></div>
+        <div className="kpi p"><div className="kpi-label">Investment Out</div><div className="kpi-val p">${fmt(s.investment_out)}</div></div>
+        <div className="kpi c"><div className="kpi-label">Subscriptions</div><div className="kpi-val c">${fmt(s.subscription_total)}</div><div className="kpi-sub">${s.subscription_count} charged · top: ${s.top_subscription||'—'}</div></div>
+        <div className="kpi r"><div className="kpi-label">Credit Balance</div><div className="kpi-val r">${fmt(s.credit_debt)}</div><div className="kpi-sub">Cash: ${fmt(s.cash_on_hand)}</div></div>
+      </div>
+      <div className="two-col">
+        <div className="panel">
+          <div className="ph"><span className="ph-title">12-Month Trend</span></div>
+          <div className="trend-wrap">
+            ${!trend?html`<div className="loading" style=${{padding:'20px 0'}}>···</div>`:html`
+              <div className="trend-bars">
+                ${trend.map(r=>html`<div key=${r.label} className="trend-month">
+                  <div className="trend-bar-wrap">
+                    <div className="trend-bar" style=${{height:Math.round((r.income/maxTrend)*64)+'px',background:'var(--green)',opacity:.7}} title=${'Income: '+fmt(r.income)}/>
+                    <div className="trend-bar" style=${{height:Math.round((r.spending/maxTrend)*64)+'px',background:'var(--red)',opacity:.7}} title=${'Spending: '+fmt(r.spending)}/>
+                  </div>
+                  <div className="trend-lbl">${r.label}</div>
+                </div>`)}
+              </div>`}
+            <div style=${{display:'flex',gap:'14px',marginTop:'8px'}}>
+              <div style=${{display:'flex',alignItems:'center',gap:'5px',fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t3)'}}><div style=${{width:'8px',height:'8px',background:'var(--green)',borderRadius:'2px',opacity:.7}}/>Income</div>
+              <div style=${{display:'flex',alignItems:'center',gap:'5px',fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t3)'}}><div style=${{width:'8px',height:'8px',background:'var(--red)',borderRadius:'2px',opacity:.7}}/>Spending</div>
+            </div>
+          </div>
+        </div>
+        <div className="panel">
+          <div className="ph"><span className="ph-title">Spending Breakdown</span><span className="ph-stat ph-right">${fmt(s.spending)} total</span></div>
+          <${SpendingBreakdown} cats=${cats||[]} total=${s.spending} allCategories=${allCategories||[]} dynEntries=${dynEntries||[]}/>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// COLUMN FILTER — Excel-style per-column dropdown
+// ══════════════════════════════════════════════
+function ColFilter({label, options, value, onChange, align='left'}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(()=>{
+    function handler(e){ if(ref.current&&!ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener('mousedown', handler);
+    return ()=>document.removeEventListener('mousedown', handler);
+  },[]);
+
+  const active = value && value.length > 0;
+
+  return html`
+    <div ref=${ref} style=${{position:'relative',display:'inline-block'}}>
+      <button
+        onClick=${()=>setOpen(p=>!p)}
+        style=${{
+          background: active ? 'var(--bd)' : 'none',
+          border: 'none',
+          color: active ? 'var(--blue)' : 'var(--t3)',
+          fontFamily: 'var(--mono)',
+          fontSize: '9px',
+          padding: '2px 4px',
+          borderRadius: 'var(--r)',
+          cursor: 'pointer',
+          letterSpacing: '.9px',
+          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '3px',
+          whiteSpace: 'nowrap',
+        }}>
+        ${label}
+        <span style=${{opacity: active ? 1 : 0.5, fontSize:'8px'}}>${active ? '●' : '▾'}</span>
+      </button>
+      ${open && html`
+        <div style=${{
+          position: 'absolute',
+          top: '100%',
+          [align==='right'?'right':'left']: 0,
+          zIndex: 999,
+          background: 'var(--s2)',
+          border: '1px solid var(--ln3)',
+          borderRadius: 'var(--r2)',
+          minWidth: '160px',
+          maxHeight: '280px',
+          overflowY: 'auto',
+          boxShadow: '0 4px 20px rgba(0,0,0,.5)',
+          padding: '4px',
+        }}>
+          <div
+            onClick=${()=>{onChange('');setOpen(false);}}
+            style=${{
+              padding: '5px 8px',
+              fontSize: '10px',
+              fontFamily: 'var(--mono)',
+              color: !value ? 'var(--blue)' : 'var(--t3)',
+              cursor: 'pointer',
+              borderRadius: 'var(--r)',
+              background: !value ? 'var(--bd)' : 'none',
+              marginBottom: '2px',
+            }}>
+            — All —
+          </div>
+          ${options.map((o,i)=>html`
+            <div key=${i}
+              onClick=${()=>{onChange(o.value);setOpen(false);}}
+              style=${{
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontFamily: 'var(--mono)',
+                color: value===o.value ? 'var(--t1)' : 'var(--t2)',
+                cursor: 'pointer',
+                borderRadius: 'var(--r)',
+                background: value===o.value ? 'var(--bd)' : 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '8px',
+              }}>
+              <span style=${{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${o.label}</span>
+              <span style=${{color:'var(--t4)',fontSize:'9px',flexShrink:0}}>${o.count}</span>
+            </div>`)}
+        </div>`}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// TRANSACTIONS PAGE — V4.1.1
+// Fix: optimistic updates (no scroll jump)
+// ══════════════════════════════════════════════
+function TransactionsPage({accounts, categories, period, year, month, initialFilter, onFilterUsed, onUpdate}) {
+  // Column filters — each stores a single selected value from the column's data
+  const [colFilters, setColFilters] = useState({
+    cls:'', account:'', owner:'', cat2:'', cat3:'', cat4:'', cat5:'',
+  });
+  const [search, setSearch]         = useState('');
+  const [incompleteOnly, setIncompleteOnly] = useState(false);
+  const [page, setPage]             = useState(0);
+
+  function setCF(key, val) {
+    setColFilters(prev=>({...prev,[key]:val}));
+    setPage(0);
+  }
+  function clearAll() {
+    setColFilters({cls:'',account:'',owner:'',cat2:'',cat3:'',cat4:'',cat5:''});
+    setSearch(''); setIncompleteOnly(false); setPage(0);
+  }
+  const hasFilters = search||incompleteOnly||Object.values(colFilters).some(v=>v);
+  // V4.1.1: local overrides for optimistic updates — key: txn id, value: partial txn fields
+  const [localOverrides, setLocalOverrides] = useState({});
+  const [savingIds, setSavingIds]           = useState(new Set());
+  const PAGE = 50;
 
   const catMap = useMemo(()=>{
     const m={};(categories||[]).forEach(c=>{m[c.id]=c;});return m;
   },[categories]);
 
-  // Build category tree for dropdowns
-  const parentCats = useMemo(()=>
-    (categories||[]).filter(c=>!c.parent_id&&!c.exclude_from_spending),
-  [categories]);
   const childrenOf = useMemo(()=>{
-    const m={};
-    (categories||[]).filter(c=>c.parent_id).forEach(c=>{
-      if(!m[c.parent_id]) m[c.parent_id]=[];
-      m[c.parent_id].push(c);
-    });
-    return m;
+    const m={};(categories||[]).forEach(c=>{
+      if(c.parent_id){if(!m[c.parent_id])m[c.parent_id]=[];m[c.parent_id].push(c);}
+    });return m;
   },[categories]);
+
+  const {data:dynEntries} = useAPI('/api/dynamic-entries');
+  const dynByType = useMemo(()=>{
+    const m={};(dynEntries||[]).forEach(e=>{if(!m[e.entry_type])m[e.entry_type]=[];m[e.entry_type].push(e);});return m;
+  },[dynEntries]);
+
+  useEffect(()=>{
+    if(initialFilter==='uncat'){setIncompleteOnly(true);onFilterUsed&&onFilterUsed();}
+  },[initialFilter]);
+
+  const dateParam = period==='year'
+    ? `&date_from=${year}-01-01&date_to=${year}-12-31`
+    : `&date_from=${year}-${String(month).padStart(2,'0')}-01&date_to=${year}-${String(month).padStart(2,'0')}-${new Date(year,month,0).getDate()}`;
+  const qp = new URLSearchParams({limit:2000});
+  // Account strip selection maps to colFilters.account (last4)
+  const selectedAcct = accounts ? accounts.find(a=>a.last_four===colFilters.account) : null;
+  const txnPath = `/api/transactions?${qp}${dateParam}`;
+
+  const {data:allTxns, loading, reload} = useAPI(txnPath,[txnPath]);
+
+  // Merge server data with local optimistic overrides
+  const txns = useMemo(()=>{
+    return (allTxns||[]).map(t => localOverrides[t.id] ? {...t,...localOverrides[t.id]} : t);
+  },[allTxns, localOverrides]);
+
+  // Incomplete tree detection — transaction is incomplete if next level exists but not set
+  function isIncomplete(t) {
+    // No cat_l2 at all = definitely incomplete (for categorizable types)
+    if (!t.cat_l2 || t.cat_l2 === '') return true;
+    if (t.cat_l2 === 'na') return false; // explicitly marked N/A
+    // Has cat_l2 — check if cat_l2 node has children that aren't assigned
+    const l3avail = childrenOf[t.cat_l2]||[];
+    if (l3avail.length > 0 && !t.cat_l3) return true;
+    if (!t.cat_l3) return false;
+    // Has cat_l3 — check if it has children or is dynamic
+    const l4avail = childrenOf[t.cat_l3]||[];
+    const cat3 = catMap[t.cat_l3];
+    const hasDynL4 = cat3&&cat3.is_dynamic_parent&&cat3.entry_type;
+    if ((l4avail.length > 0 || hasDynL4) && !t.cat_l4) return true;
+    if (!t.cat_l4) return false;
+    // Has cat_l4 — check if dynamic parent needing L5
+    const cat4 = catMap[t.cat_l4];
+    if (cat4&&cat4.is_dynamic_parent&&cat4.entry_type&&!t.cat_l5) return true;
+    return false;
+  }
 
   const filtered = useMemo(()=>{
     let t = txns;
     if (search) {
-      const q = search.toLowerCase();
-      t = t.filter(x=>(x.description||'').toLowerCase().includes(q)
-        ||(x.counterparty||'').toLowerCase().includes(q)
-        ||(x.merchant_clean||'').toLowerCase().includes(q));
+      const q=search.toLowerCase();
+      t=t.filter(x=>(x.description||'').toLowerCase().includes(q)||(x.merchant_clean||'').toLowerCase().includes(q)||(x.counterparty||'').toLowerCase().includes(q));
     }
-    if (classFilter === '__subscription__') t = t.filter(x=>x.recurring_type==='subscription');
-    else if (classFilter === '__utility__') t = t.filter(x=>x.recurring_type==='utility');
-    else if (classFilter === '__recurring__') t = t.filter(x=>x.is_recurring||x.recurring_type);
-    else if (classFilter) t = t.filter(x=>x.txn_class===classFilter);
-    if (catFilter === '__uncat__') t = t.filter(x=>!x.category_id && !x.subcategory_id && x.txn_class === 'expense');
-    else if (catFilter) t = t.filter(x=>x.category_id===catFilter||x.subcategory_id===catFilter);
-    if (recurringFilter) t = t.filter(x=>x.recurring_type===recurringFilter);
-    if (dateFrom) t = t.filter(x=>x.date>=dateFrom);
-    if (dateTo) t = t.filter(x=>x.date<=dateTo);
+    if (colFilters.cls)     t=t.filter(x=>x.txn_class===colFilters.cls);
+    if (colFilters.account) t=t.filter(x=>x.account_last4===colFilters.account);
+    if (colFilters.owner)   t=t.filter(x=>x.owner===colFilters.owner);
+    if (colFilters.cat2)    t=t.filter(x=>x.cat_l2===colFilters.cat2);
+    if (colFilters.cat3)    t=t.filter(x=>x.cat_l3===colFilters.cat3);
+    if (colFilters.cat4)    t=t.filter(x=>x.cat_l4===colFilters.cat4);
+    if (colFilters.cat5)    t=t.filter(x=>x.cat_l5===colFilters.cat5);
+    if (incompleteOnly)     t=t.filter(x=>isIncomplete(x));
     return t;
-  },[txns,search,classFilter,catFilter]);
+  },[txns,search,colFilters,incompleteOnly]);
+
+  // Build column option lists from current (pre-filter) txn set for each column
+  const colOpts = useMemo(()=>{
+    const count = (arr, key) => {
+      const m={};
+      arr.forEach(t=>{const v=t[key];if(v){m[v]=(m[v]||0)+1;}});
+      return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([v,c])=>({value:v,label:v,count:c}));
+    };
+    const countCat = (arr, key) => {
+      const m={};
+      arr.forEach(t=>{const v=t[key];if(v&&v!=='na'){m[v]=(m[v]||0)+1;}});
+      return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([v,c])=>({
+        value:v, label:(catMap[v]?.name||v), count:c
+      }));
+    };
+    const countDyn = (arr) => {
+      const m={};
+      arr.forEach(t=>{const v=t.cat_l5;if(v){m[v]=(m[v]||0)+1;}});
+      // Look up name from dynEntries
+      const dynMap={};(dynEntries||[]).forEach(e=>{dynMap[e.id]=e.name;});
+      return Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([v,c])=>({
+        value:v, label:(dynMap[v]||v), count:c
+      }));
+    };
+    const clsOpts = TXN_CLASSES.map(c=>({
+      value:c.v, label:c.label,
+      count: txns.filter(t=>t.txn_class===c.v).length
+    })).filter(o=>o.count>0);
+    return {
+      cls:     clsOpts,
+      account: count(txns,'account_last4').map(o=>({...o,label:'···'+o.label})),
+      owner:   count(txns,'owner'),
+      cat2:    countCat(txns,'cat_l2'),
+      cat3:    countCat(txns,'cat_l3'),
+      cat4:    countCat(txns,'cat_l4'),
+      cat5:    countDyn(txns),
+    };
+  },[txns,catMap,dynEntries]);
 
   const paged = filtered.slice(page*PAGE,(page+1)*PAGE);
-  const totalPages = Math.ceil(filtered.length/PAGE);
+  const pages = Math.ceil(filtered.length/PAGE);
 
-  useEffect(()=>setPage(0),[search,classFilter,catFilter,recurringFilter,dateFrom,dateTo,selectedAccount,ownerFilter]);
+  // V4.1.1: Optimistic patch — update local state immediately, fire API in background
+  async function patchTxn(id, changes) {
+    // Compute cascading resets locally
+    const full = {...(localOverrides[id]||{}), ...changes};
 
-  async function updateTxn(id, changes) {
-    await apiFetch(`/api/transactions/${id}`, {method:'PATCH', body: changes});
-    reload();
-    onUpdate && onUpdate();
+    // If txn_class changed, reset all cats
+    if ('txn_class' in changes) {
+      full.cat_l1 = L1MAP[changes.txn_class] || null;
+      full.cat_l2 = null; full.cat_l3 = null; full.cat_l4 = null; full.cat_l5 = null;
+    }
+    // If cat_l2 changed, reset deeper
+    if ('cat_l2' in changes && !('txn_class' in changes)) {
+      full.cat_l3 = null; full.cat_l4 = null; full.cat_l5 = null;
+    }
+    // If cat_l3 changed, reset deeper
+    if ('cat_l3' in changes && !('txn_class' in changes)) {
+      full.cat_l4 = null; full.cat_l5 = null;
+    }
+    // If cat_l4 changed, reset l5
+    if ('cat_l4' in changes && !('txn_class' in changes)) {
+      full.cat_l5 = null;
+    }
+    full.user_verified = true;
+
+    // Apply optimistically
+    setLocalOverrides(prev => ({...prev, [id]: full}));
+    setSavingIds(prev => new Set(prev).add(id));
+
+    try {
+      await apiFetch(`/api/transactions/${id}`,{method:'PATCH',body:changes});
+      onUpdate&&onUpdate();
+    } catch(e) {
+      // Rollback on error
+      setLocalOverrides(prev => {const n={...prev};delete n[id];return n;});
+      alert('Save failed: '+e.message);
+    } finally {
+      setSavingIds(prev => {const n=new Set(prev);n.delete(id);return n;});
+    }
   }
 
-  const rowClass = t => {
-    if (t.txn_class==='income') return 'is-income';
-    if (['internal_transfer','cc_payment','savings_move'].includes(t.txn_class)) return 'is-transfer';
-    if (t.txn_class==='ignore') return 'is-ignored';
+  const rowCls = t => {
+    if(savingIds.has(t.id)) return 'tr-saving';
+    if(t.txn_class==='income') return 'tr-inc';
+    if(['internal_transfer','cc_payment'].includes(t.txn_class)) return 'tr-xfer';
+    if(t.txn_class==='ignore') return 'tr-ign';
     return '';
   };
 
-  const amtClass = t => {
-    if (t.txn_class==='income') return 'pos';
-    if (['internal_transfer','cc_payment','savings_move','ignore'].includes(t.txn_class)) return 'transfer';
-    return t.amount >= 0 ? 'pos' : 'neg';
+  const amtCls = t => {
+    if(['income','savings_in','investment_in'].includes(t.txn_class)) return 'pos';
+    if(['internal_transfer','cc_payment','ignore'].includes(t.txn_class)) return 'xfr';
+    return t.amount>=0?'pos':'neg';
   };
 
+  function l2opts(txn_class) {
+    const l1id = L1MAP[txn_class];
+    // If we have a mapped L1, show its children; otherwise show all L2 cats
+    if (l1id) return childrenOf[l1id]||[];
+    return (categories||[]).filter(c=>c.level===2);
+  }
+  function l3opts(l2id) { return childrenOf[l2id]||[]; }
+  function l4opts(l3id) { return childrenOf[l3id]||[]; }
+  function l5opts(l4id) {
+    const cat = catMap[l4id];
+    if (!cat||!cat.is_dynamic_parent||!cat.entry_type) return [];
+    return dynByType[cat.entry_type]||[];
+  }
+
   return html`
-    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
-      <${AccountCards} accounts=${accounts||[]} selected=${selectedAccount}
-        onSelect=${a=>{setSelectedAccount(a);}} />
+    <div style=${{display:'flex',flexDirection:'column',gap:'12px'}}>
+      <div>
+        <div className="sec-lbl">Account</div>
+        <div className="acct-strip">
+          <div className=${`ap all ${!colFilters.account?'sel':''}`} onClick=${()=>setCF('account','')}>
+            <div className="ap-name">All</div>
+            <div className="ap-inst">${(accounts||[]).length} linked</div>
+          </div>
+          ${(accounts||[]).map(a=>html`
+            <div key=${a.id} className=${`ap ${colFilters.account===a.last_four?'sel':''}`}
+              onClick=${()=>setCF('account', colFilters.account===a.last_four?'':a.last_four)}>
+              <div className="ap-name">${shortName(a.name)}</div>
+              <div className="ap-inst">${a.institution} ···${a.last_four}</div>
+              ${a.balance_available!=null
+                ? html`<div className=${`ap-bal ${a.type==='credit'?'crd':a.is_savings?'sav':'chk'}`}>${fmt(Math.abs(a.balance_available))}</div>`
+                : a.balance_ledger!=null
+                  ? html`<div className=${`ap-bal ${a.type==='credit'?'crd':a.is_savings?'sav':'chk'}`}>${fmt(Math.abs(a.balance_ledger))}</div>`
+                  : null}
+              <div style=${{display:'flex',gap:'3px',flexWrap:'wrap'}}>
+                <${OB} owner=${a.owner}/>
+                ${a.exclude_from_savings&&html`<span className="badge b-exp">bills</span>`}
+              </div>
+            </div>`)}
+        </div>
+      </div>
 
       <div className="panel">
-        <div className="filters-bar">
-          <div className="search-wrap">
-            <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
-            </svg>
-            <input className="search-input" placeholder="Search merchant, description..."
-              value=${search} onInput=${e=>{setSearch(e.target.value);}} />
+        <div className="fbar">
+          <div className="sw">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/></svg>
+            <input className="si" placeholder="Search merchant or description..." value=${search} onInput=${e=>{setSearch(e.target.value);setPage(0);}}/>
           </div>
-          <select className="filter-pill" value=${classFilter}
-            onChange=${e=>{setClassFilter(e.target.value);if(catFilter==='__uncat__')setCatFilter('');}}>
-            <option value="">All types</option>
-            <option value="expense">Expenses</option>
-            <option value="income">Income</option>
-            <option value="internal_transfer">Transfers</option>
-            <option value="cc_payment">CC Payments</option>
-            <option value="investment_out">Investments</option>
-            <option value="ignore">Ignored</option>
-            <optgroup label="─────────────"></optgroup>
-            <option value="__subscription__">Subscriptions</option>
-            <option value="__utility__">Utilities</option>
-            <option value="__recurring__">All Recurring</option>
-          </select>
-          <select className="filter-pill" value=${recurringFilter}
-            onChange=${e=>setRecurringFilter(e.target.value)}>
-            <option value="">All recurring</option>
-            <option value="subscription">Subscriptions</option>
-            <option value="utility">Utilities</option>
-            <option value="recurring_expense">Regular</option>
-          </select>
-          <select className="filter-pill" value=${catFilter}
-            onChange=${e=>setCatFilter(e.target.value)}>
-            <option value="">All categories</option>
-            ${parentCats.map(p=>html`
-              <optgroup label=${p.name}>
-                <option value=${p.id}>${p.name} (all)</option>
-                ${(childrenOf[p.id]||[]).map(c=>html`
-                  <option key=${c.id} value=${c.id}>  ${c.name}</option>`)}
-              </optgroup>`)}
-          </select>
-          <select className="filter-pill" value=${ownerFilter}
-            onChange=${e=>setOwnerFilter(e.target.value)}>
-            <option value="">All owners</option>
-            <option value="sam">Sam</option>
-            <option value="jess">Jess</option>
-            <option value="joint">Joint</option>
-          </select>
-          <input type="date" className="filter-pill" value=${dateFrom}
-            onChange=${e=>setDateFrom(e.target.value)}
-            style=${{fontFamily:'var(--mono)',fontSize:'11px',cursor:'pointer'}}
-            title="From date" />
-          <input type="date" className="filter-pill" value=${dateTo}
-            onChange=${e=>setDateTo(e.target.value)}
-            style=${{fontFamily:'var(--mono)',fontSize:'11px',cursor:'pointer'}}
-            title="To date" />
-          ${(classFilter||catFilter||recurringFilter||dateFrom||dateTo||ownerFilter) && html`
-            <button className="btn btn-ghost" style=${{fontSize:'10px',padding:'4px 8px'}}
-              onClick=${()=>{setClassFilter('');setCatFilter('');setRecurringFilter('');setDateFrom('');setDateTo('');setOwnerFilter('');}}>
-              clear
-            </button>`}
-          <span className="count-badge">${filtered.length.toLocaleString()} txns</span>
+          <button className=${`fp ${incompleteOnly?'on':''}`}
+            onClick=${()=>setIncompleteOnly(p=>!p)}
+            title="Show transactions where the category tree is not fully filled out">
+            ${incompleteOnly?'✓ ':''} Incomplete
+          </button>
+          ${hasFilters&&html`<button className="clr-btn" onClick=${clearAll}>clear all</button>`}
+          <span className="cbadge">${filtered.length.toLocaleString()} / ${txns.length.toLocaleString()} txns</span>
         </div>
 
         ${loading
           ? html`<div className="loading">Loading transactions...</div>`
           : paged.length===0
-            ? html`<div className="empty">No transactions match your filters</div>`
+            ? html`<div className="empty">No transactions match filters</div>`
             : html`
-              <div className="tbl-wrap">
+              <div className="tw">
                 <table>
                   <thead><tr>
                     <th>Date</th>
                     <th>Merchant</th>
-                    <th>Account</th>
+                    <th>
+                      <${ColFilter} label="Account" options=${colOpts.account}
+                        value=${colFilters.account} onChange=${v=>setCF('account',v)}/>
+                    </th>
                     <th style=${{textAlign:'right'}}>Amount</th>
-                    <th>Type</th>
-                    <th>Category</th>
+                    <th className="col-sep">
+                      <${ColFilter} label="Classification" options=${colOpts.cls}
+                        value=${colFilters.cls} onChange=${v=>setCF('cls',v)}/>
+                    </th>
+                    <th className="col-sep">
+                      <${ColFilter} label="Category" options=${colOpts.cat2}
+                        value=${colFilters.cat2} onChange=${v=>setCF('cat2',v)}/>
+                    </th>
+                    <th>
+                      <${ColFilter} label="Sub" options=${colOpts.cat3}
+                        value=${colFilters.cat3} onChange=${v=>setCF('cat3',v)}/>
+                    </th>
+                    <th>
+                      <${ColFilter} label="Detail" options=${colOpts.cat4}
+                        value=${colFilters.cat4} onChange=${v=>setCF('cat4',v)}/>
+                    </th>
+                    <th>
+                      <${ColFilter} label="Tag" options=${colOpts.cat5}
+                        value=${colFilters.cat5} onChange=${v=>setCF('cat5',v)}/>
+                    </th>
                   </tr></thead>
                   <tbody>
                     ${paged.map(t=>{
-                      const acct = acctMap[t.account_id];
-                      const cat = catMap[t.category_id];
-                      const subcat = catMap[t.subcategory_id];
-                      const showCatSelect = t.txn_class==='expense' || !t.txn_class;
-                      const parentCatsForSelect = parentCats;
-                      return html`<tr key=${t.id} className=${rowClass(t)}>
-                        <td className="td-date">${fmtDate(t.date)}</td>
+                      const l2 = l2opts(t.txn_class);
+                      const l3 = l3opts(t.cat_l2||'');
+                      const l4 = l4opts(t.cat_l3||'');
+                      const l5 = t.cat_l4 ? l5opts(t.cat_l4) : [];
+                      const canCat = true; // all types can have categories
+                      return html`<tr key=${t.id} className=${rowCls(t)}>
+                        <td className="td-date">${fmtD(t.date)}</td>
                         <td>
-                          <div className="td-merchant" title=${t.description}>
-                            ${t.merchant_clean || t.counterparty || t.description}
-                            ${t.user_verified && html`<span className="verified-dot" title="Manually verified" />`}
+                          <div className="td-m" title=${t.description}>
+                            ${t.merchant_clean||t.counterparty||t.description}
+                            ${t.user_verified&&html`<span className="vdot" title="Verified"/>`}
                           </div>
-                          ${(t.merchant_clean||t.counterparty) && html`
-                            <div className="td-raw">${t.description.substring(0,50)}</div>`}
+                          ${(t.merchant_clean||t.counterparty)&&html`<div className="td-raw">${t.description.substring(0,45)}</div>`}
                         </td>
                         <td>
-                          ${acct && html`<div>
-                            <div style=${{fontSize:'11px',color:'var(--text2)',fontFamily:'var(--mono)'}}>···${acct.last_four}</div>
-                            <${OwnerBadge} owner=${acct.owner} />
-                          </div>`}
+                          <div style=${{fontSize:'11px',fontFamily:'var(--mono)',color:'var(--t2)'}}>···${t.account_last4}</div>
+                          <${OB} owner=${t.owner}/>
                         </td>
                         <td>
-                          <div className=${`td-amount ${amtClass(t)}`}>${fmt(t.amount)}</div>
-                          ${t.status==='pending'&&html`<div style=${{fontSize:'10px',color:'var(--amber)',fontFamily:'var(--mono)',textAlign:'right'}}>pending</div>`}
+                          <div className=${`td-amt ${amtCls(t)}`}>${fmt(t.amount)}</div>
+                          ${t.status==='pending'&&html`<div style=${{fontSize:'9px',color:'var(--amber)',fontFamily:'var(--mono)',textAlign:'right'}}>pending</div>`}
                         </td>
-                        <td>
-                          <div className="td-badges">
-                            <${ClassBadge} cls=${t.txn_class} />
-                            <${RecurringBadge} type=${t.recurring_type} />
-                          </div>
-                          <select className=${`class-select ${t.txn_class||''}`}
-                            style=${{marginTop:'4px'}}
-                            value=${t.txn_class||''}
-                            onChange=${e=>updateTxn(t.id,{txn_class:e.target.value})}>
-                            <option value="">— unclassified —</option>
-                            <option value="expense">Expense</option>
-                            <option value="income">Income</option>
-                            <option value="internal_transfer">Transfer</option>
-                            <option value="cc_payment">CC Payment</option>
-                            <option value="investment_out">Investment Out</option>
-                            <option value="investment_in">Investment In</option>
-                            <option value="debt_payment">Debt Payment</option>
-                            <option value="savings_move">Savings Move</option>
-                            <option value="ignore">Ignore</option>
-                          </select>
-                          <select className=${`class-select ${t.recurring_type||''}`}
-                            style=${{marginTop:'3px'}}
-                            value=${t.recurring_type||''}
-                            onChange=${e=>updateTxn(t.id,{recurring_type:e.target.value})}>
-                            <option value="">— recurring type —</option>
-                            <option value="subscription">Subscription</option>
-                            <option value="utility">Utility / Bill</option>
-                            <option value="recurring_expense">Regular Expense</option>
-                            <option value="one_time">One-time</option>
+                        <td className="col-sep" style=${{minWidth:'130px'}}>
+                          <div className="td-pills"><${CB} cls=${t.txn_class}/></div>
+                          <select className=${`isel ${t.txn_class||''}`} value=${t.txn_class||''}
+                            onChange=${e=>patchTxn(t.id,{txn_class:e.target.value})}>
+                            <option value="">— type —</option>
+                            ${TXN_CLASSES.map(c=>html`<option key=${c.v} value=${c.v}>${c.label}</option>`)}
                           </select>
                         </td>
-                        <td>
-                          ${showCatSelect && html`<div className="cat-cell">
-                            <select className=${`cat-select ${t.category_id?'assigned':''}`}
-                              value=${t.category_id||''}
-                              onChange=${e=>updateTxn(t.id,{category_id:e.target.value,subcategory_id:null})}>
-                              <option value="">— category —</option>
-                              ${parentCatsForSelect.map(p=>html`
-                                <optgroup label=${p.name}>
-                                  <option value=${p.id}>${p.name}</option>
-                                  ${(childrenOf[p.id]||[]).map(c=>html`
-                                    <option key=${c.id} value=${c.id}>  ${c.name}</option>`)}
-                                </optgroup>`)}
-                            </select>
-                            ${t.category_id && childrenOf[t.category_id] && childrenOf[t.category_id].length > 0 && html`
-                              <select className=${`cat-select ${t.subcategory_id?'assigned':''}`}
-                                value=${t.subcategory_id||''}
-                                onChange=${e=>updateTxn(t.id,{subcategory_id:e.target.value})}>
-                                <option value="">— subcategory —</option>
-                                ${(childrenOf[t.category_id]||[]).map(c=>html`
-                                  <option key=${c.id} value=${c.id}>${c.name}</option>`)}
-                              </select>`}
-                          </div>`}
+                        <td className="col-sep" style=${{minWidth:'130px'}}>
+                          <select className=${`isel ${t.cat_l2?'set':''}`} value=${t.cat_l2||''}
+                            onChange=${e=>patchTxn(t.id,{cat_l2:e.target.value})}>
+                            <option value="">— category —</option>
+                            <option value="na">N/A</option>
+                            ${l2.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                          </select>
+                        </td>
+                        <td style=${{minWidth:'120px'}}>
+                          ${canCat&&t.cat_l2&&l3.length>0&&html`
+                            <select className=${`isel ${t.cat_l3?'set':''}`} value=${t.cat_l3||''}
+                              onChange=${e=>patchTxn(t.id,{cat_l3:e.target.value})}>
+                              <option value="">— sub —</option>
+                              ${l3.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                            </select>`}
+                        </td>
+                        <td style=${{minWidth:'120px'}}>
+                          ${canCat&&t.cat_l3&&l4.length>0&&html`
+                            <select className=${`isel ${t.cat_l4?'set':''}`} value=${t.cat_l4||''}
+                              onChange=${e=>patchTxn(t.id,{cat_l4:e.target.value})}>
+                              <option value="">— detail —</option>
+                              ${l4.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                            </select>`}
+                        </td>
+                        <td style=${{minWidth:'120px'}}>
+                          ${canCat&&t.cat_l4&&l5.length>0&&html`
+                            <select className=${`isel trip-sel ${t.cat_l5?'set':''}`} value=${t.cat_l5||''}
+                              onChange=${e=>patchTxn(t.id,{cat_l5:e.target.value})}>
+                              <option value="">— tag —</option>
+                              ${l5.map(e=>html`<option key=${e.id} value=${e.id}>${e.name}</option>`)}
+                            </select>`}
                         </td>
                       </tr>`;
                     })}
                   </tbody>
                 </table>
               </div>
-              <div className="pagination">
-                <button className="page-btn" onClick=${()=>setPage(p=>p-1)} disabled=${page===0}>← prev</button>
-                <span className="page-info">page ${page+1} / ${Math.max(1,totalPages)} · ${filtered.length.toLocaleString()} results</span>
-                <button className="page-btn" onClick=${()=>setPage(p=>p+1)} disabled=${page>=totalPages-1}>next →</button>
+              <div className="pager">
+                <button className="pg-btn" onClick=${()=>setPage(p=>p-1)} disabled=${page===0}>← prev</button>
+                <span className="pg-info">page ${page+1} / ${Math.max(1,pages)} · ${filtered.length.toLocaleString()} results</span>
+                <button className="pg-btn" onClick=${()=>setPage(p=>p+1)} disabled=${page>=pages-1}>next →</button>
               </div>`}
       </div>
     </div>`;
 }
 
-// ── Recurring View ──
-function RecurringView() {
-  const {data, loading, reload} = useAPI('/api/recurring');
-  const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('');
-  const [showCancelled, setShowCancelled] = useState(false);
-  const [showAddRule, setShowAddRule] = useState(false);
-  const [addForm, setAddForm] = useState({match_value:'', merchant_clean:'', recurring_type:'subscription'});
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
+// ══════════════════════════════════════════════
+// CATEGORIES PAGE — V4.1.1
+// Fix: AddForm defined outside render to prevent focus loss
+// ══════════════════════════════════════════════
 
-  const items = data || [];
-  const filtered = items.filter(r=>{
-    if (!showCancelled && r.recurring_type === 'cancelled') return false;
-    if (search && !r.merchant.toLowerCase().includes(search.toLowerCase())) return false;
-    if (typeFilter && r.recurring_type !== typeFilter) return false;
-    return true;
-  });
-
-  const typeColor = t => {
-    if (t==='subscription') return 'var(--amber)';
-    if (t==='utility') return 'var(--cyan)';
-    if (t==='recurring_expense') return 'var(--blue)';
-    return 'var(--text3)';
-  };
-
-  const totalMonthly = filtered.reduce((s,r)=>s+r.avg_amount,0);
-
-
-  async function cancelMerchant(merchant) {
-    // Creates a rule that marks this merchant as one_time + inactive going forward
-    // We tag with a special recurring_type 'cancelled' so we can filter it
-    try {
-      await apiFetch('/api/rules', {method:'POST', body:{
-        match_type:'description_contains',
-        match_value:merchant.toLowerCase(),
-        recurring_type:'cancelled',
-        txn_class:'expense',
-        merchant_clean:merchant,
-        apply_to_existing:true,
-        priority:75,
-      }});
-      reload();
-    } catch(e) { console.error(e); }
-  }
-
-  async function updateType(merchant, newType) {
-    try {
-      await apiFetch('/api/rules', {method:'POST', body:{
-        match_type:'description_contains',
-        match_value:merchant.toLowerCase(),
-        recurring_type:newType||null,
-        txn_class:'expense',
-        merchant_clean:merchant,
-        apply_to_existing:true,
-        priority:80,
-      }});
-      reload();
-    } catch(e) { console.error(e); }
-  }
-
-  async function addMissed() {
-    if (!addForm.match_value.trim()) { setErr('Search term required'); return; }
-    setSaving(true); setErr('');
-    try {
-      await apiFetch('/api/rules', {method:'POST', body:{
-        match_type:'description_contains',
-        match_value:addForm.match_value.trim(),
-        merchant_clean:addForm.merchant_clean.trim()||addForm.match_value.trim(),
-        recurring_type:addForm.recurring_type,
-        txn_class:'expense',
-        apply_to_existing:true,
-        priority:80,
-      }});
-      setAddForm({match_value:'',merchant_clean:'',recurring_type:'subscription'});
-      setShowAddRule(false);
-      reload();
-    } catch(e) { setErr(e.message); }
-    finally { setSaving(false); }
-  }
-
-  if (loading) return html`<div className="loading">Loading recurring charges...</div>`;
-
+// AddForm is a standalone component — NOT defined inside CategoriesPage
+// This prevents React from remounting it on every parent re-render
+function CategoryAddForm({form, setForm, onSave, onCancel, saving, err}) {
   return html`
-    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
-      <div className="summary-grid" style=${{gridTemplateColumns:'repeat(3,1fr)'}}>
-        <div className="sum-card amber">
-          <div className="sum-label">Monthly Total</div>
-          <div className="sum-value amber">${fmt(totalMonthly)}</div>
-          <div className="sum-sub">${filtered.length} merchants</div>
+    <div style=${{background:'var(--s2)',border:'1px solid var(--ln2)',borderRadius:'var(--r)',padding:'10px',margin:'6px 0'}}>
+      <div className="form-row">
+        <div className="fg" style=${{flex:1}}>
+          <label className="fl">Name</label>
+          <input className="fi" placeholder="Category name" value=${form.name}
+            onInput=${e=>setForm(f=>({...f,name:e.target.value}))}
+            onKeyDown=${e=>e.key==='Enter'&&onSave()}
+            style=${{minWidth:'0',width:'100%'}} autoFocus/>
         </div>
-        <div className="sum-card blue">
-          <div className="sum-label">Subscriptions</div>
-          <div className="sum-value blue">${filtered.filter(r=>r.recurring_type==='subscription').length}</div>
-          <div className="sum-sub">${fmt(filtered.filter(r=>r.recurring_type==='subscription').reduce((s,r)=>s+r.avg_amount,0))} / mo</div>
+        <div className="fg">
+          <label className="fl">Color</label>
+          <input type="color" value=${form.color}
+            style=${{width:'38px',height:'32px',border:'1px solid var(--ln2)',borderRadius:'var(--r)',padding:'2px',background:'var(--s2)',cursor:'pointer'}}
+            onInput=${e=>setForm(f=>({...f,color:e.target.value}))}/>
         </div>
-        <div className="sum-card green">
-          <div className="sum-label">Utilities</div>
-          <div className="sum-value green">${filtered.filter(r=>r.recurring_type==='utility').length}</div>
-          <div className="sum-sub">${fmt(filtered.filter(r=>r.recurring_type==='utility').reduce((s,r)=>s+r.avg_amount,0))} / mo</div>
+        <div className="fg">
+          <label className="fl">Budget/mo</label>
+          <input className="fi" type="number" placeholder="Optional" value=${form.budget_amount}
+            onInput=${e=>setForm(f=>({...f,budget_amount:e.target.value}))} style=${{width:'100px'}}/>
         </div>
+        <button className="btn btn-s" onClick=${onSave} disabled=${saving}>
+          ${saving?'saving…':form._editId?'save':'+ add'}
+        </button>
+        <button className="btn btn-g" onClick=${onCancel}>cancel</button>
       </div>
-
-      <div className="panel">
-        <div className="panel-header">
-          <span className="panel-title">Subscriptions & Bills</span>
-          <div className="panel-actions">
-            <div className="search-wrap" style=${{width:'200px'}}>
-              <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
-              </svg>
-              <input className="search-input" placeholder="Search merchant..."
-                value=${search} onInput=${e=>setSearch(e.target.value)} />
-            </div>
-            <select className="filter-pill" value=${typeFilter}
-              onChange=${e=>setTypeFilter(e.target.value)}>
-              <option value="">All types</option>
-              <option value="subscription">Subscriptions</option>
-              <option value="utility">Utilities</option>
-              <option value="recurring_expense">Regular Expenses</option>
-            </select>
-            <span className="count-badge">${filtered.length}</span>
-            <button className="btn btn-ghost" style=${{fontSize:'11px'}} onClick=${()=>setShowCancelled(p=>!p)}>
-              ${showCancelled?'hide cancelled':'show cancelled'}
-            </button>
-            <button className="btn btn-primary" onClick=${()=>setShowAddRule(p=>!p)}>+ Add missed</button>
-          </div>
-        </div>
-
-        ${showAddRule && html`
-          <div style=${{padding:'14px',borderBottom:'1px solid var(--border)',background:'var(--bg3)'}}>
-            <div style=${{fontSize:'12px',color:'var(--text2)',marginBottom:'10px'}}>
-              Add a subscription or bill the auto-detector missed. Enter a keyword from the transaction description.
-            </div>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Description contains</label>
-                <input className="form-input" placeholder="e.g. hulu, xfinity, geico..."
-                  value=${addForm.match_value}
-                  onInput=${e=>setAddForm(f=>({...f,match_value:e.target.value}))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Display name (optional)</label>
-                <input className="form-input" placeholder="e.g. Hulu"
-                  value=${addForm.merchant_clean}
-                  onInput=${e=>setAddForm(f=>({...f,merchant_clean:e.target.value}))} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Type</label>
-                <select className="form-select" value=${addForm.recurring_type}
-                  onChange=${e=>setAddForm(f=>({...f,recurring_type:e.target.value}))}>
-                  <option value="subscription">Subscription</option>
-                  <option value="utility">Utility / Bill</option>
-                  <option value="recurring_expense">Regular Expense</option>
-                </select>
-              </div>
-              <button className="btn btn-success" onClick=${addMissed} disabled=${saving}>
-                ${saving?'saving...':'+ add'}
-              </button>
-              <button className="btn btn-ghost" onClick=${()=>{setShowAddRule(false);setErr('');}}>cancel</button>
-            </div>
-            ${err && html`<div className="err-msg">${err}</div>`}
-          </div>`}
-
-        <div style=${{padding:'14px'}}>
-          <div className="recurring-grid">
-            ${filtered.map(r=>html`
-              <div key=${r.merchant} className="rec-card">
-                <div className="rec-merchant">
-                  <span className="rec-type-dot" style=${{background:typeColor(r.recurring_type)}} />
-                  ${r.merchant}
-                </div>
-                <div className="rec-stats">
-                  <div>
-                    <div className="rec-stat-label">avg / mo</div>
-                    <div className="rec-stat-value" style=${{color:typeColor(r.recurring_type)}}>${fmt(r.avg_amount)}</div>
-                  </div>
-                  <div>
-                    <div className="rec-stat-label">times</div>
-                    <div className="rec-stat-value" style=${{color:'var(--blue)'}}>${r.occurrences}</div>
-                  </div>
-                </div>
-                <div style=${{marginTop:'8px',display:'flex',alignItems:'center',gap:'6px',flexWrap:'wrap'}}>
-                  <select
-                    style=${{background:'var(--bg4)',border:'1px solid var(--border3)',color:typeColor(r.recurring_type),fontFamily:'var(--mono)',fontSize:'10px',padding:'2px 6px',borderRadius:'4px',outline:'none',cursor:'pointer'}}
-                    value=${r.recurring_type||''}
-                    onChange=${e=>updateType(r.merchant,e.target.value)}>
-                    <option value="">unclassified</option>
-                    <option value="subscription">subscription</option>
-                    <option value="utility">utility</option>
-                    <option value="recurring_expense">regular</option>
-                    <option value="one_time">one-time</option>
-                  </select>
-                  <span style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
-                    last ${fmtDateFull(r.last_seen)}
-                  </span>
-                  <button
-                    title="Mark as cancelled — hides from active list"
-                    onClick=${()=>cancelMerchant(r.merchant)}
-                    style=${{marginLeft:'auto',background:'none',border:'1px solid var(--border3)',color:'var(--text3)',fontFamily:'var(--mono)',fontSize:'10px',padding:'2px 6px',borderRadius:'4px',cursor:'pointer'}}>
-                    cancel
-                  </button>
-                </div>
-              </div>`)}
-          </div>
-        </div>
-      </div>
+      ${err&&html`<div className="err">${err}</div>`}
     </div>`;
 }
 
+function CategoriesPage({categories, onUpdate}) {
+  const [expanded, setExpanded]   = useState({});
+  const [addParent, setAddParent] = useState(null);
+  const [form, setForm]           = useState({name:'',color:'#3d9eff',budget_amount:'',_editId:null});
+  const [saving, setSaving]       = useState(false);
+  const [err, setErr]             = useState('');
 
-// ── Categories View ──
-function CategoriesView({categories, onUpdate}) {
-  const [showAddParent, setShowAddParent] = useState(false);
-  const [showAddChild, setShowAddChild] = useState(null); // parent id
-  const [editId, setEditId] = useState(null);
-  const [expanded, setExpanded] = useState({});
-  const [form, setForm] = useState({name:'',color:'#4d9fff',budget_amount:'',parent_id:null});
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
+  const {data:dynEntries, reload:reloadDyn} = useAPI('/api/dynamic-entries');
+  const [dynForm, setDynForm]     = useState({type:'car',name:''});
+  const [showAddDyn, setShowAddDyn] = useState(false);
 
-  const parents = (categories||[]).filter(c=>!c.parent_id);
+  const l1cats = (categories||[]).filter(c=>c.level===1);
   const childrenOf = useMemo(()=>{
-    const m={};
-    (categories||[]).filter(c=>c.parent_id).forEach(c=>{
-      if(!m[c.parent_id]) m[c.parent_id]=[];
-      m[c.parent_id].push(c);
-    });
-    return m;
+    const m={};(categories||[]).forEach(c=>{if(c.parent_id){if(!m[c.parent_id])m[c.parent_id]=[];m[c.parent_id].push(c);}});return m;
   },[categories]);
 
-  const toggleExpand = id => setExpanded(prev=>({...prev,[id]:!prev[id]}));
+  const toggle = id => setExpanded(p=>({...p,[id]:!p[id]}));
 
-  async function save(parentId=null) {
-    if (!form.name.trim()) { setErr('Name required'); return; }
-    setSaving(true); setErr('');
-    try {
-      const body = {
-        name: form.name.trim(),
-        color: form.color,
-        parent_id: parentId,
-        budget_amount: form.budget_amount ? parseFloat(form.budget_amount) : null,
-      };
-      if (editId) {
-        await apiFetch(`/api/categories/${editId}`, {method:'PATCH', body});
-      } else {
-        await apiFetch('/api/categories', {method:'POST', body});
-      }
-      setForm({name:'',color:'#4d9fff',budget_amount:'',parent_id:null});
-      setShowAddParent(false); setShowAddChild(null); setEditId(null);
-      onUpdate && onUpdate();
-    } catch(e) { setErr(e.message); }
-    finally { setSaving(false); }
-  }
-
-  async function deleteCategory(id) {
-    if (!confirm('Delete this category? Transactions will be unassigned.')) return;
-    try {
-      const r = await apiFetch(`/api/categories/${id}`, {method:'DELETE'});
-      if (r.error) { alert(r.detail || r.error); return; }
-      onUpdate && onUpdate();
-    } catch(e) { alert(e.message); }
-  }
-
-  const startEdit = (c) => {
-    setEditId(c.id);
-    setForm({name:c.name,color:c.color||'#4d9fff',budget_amount:c.budget_amount||'',parent_id:c.parent_id});
-    setShowAddParent(true);
+  const resetForm = () => {
+    setAddParent(null);
+    setForm({name:'',color:'#3d9eff',budget_amount:'',_editId:null});
+    setErr('');
   };
 
-  const AddForm = ({parentId=null}) => html`
-    <div style=${{background:'var(--bg3)',border:'1px solid var(--border2)',borderRadius:'var(--radius)',padding:'12px',marginTop:'8px'}}>
-      <div className="form-row">
-        <div className="form-group">
-          <label className="form-label">Name</label>
-          <input className="form-input" placeholder="Category name" value=${form.name}
-            onInput=${e=>setForm(f=>({...f,name:e.target.value}))}
-            onKeyDown=${e=>e.key==='Enter'&&save(parentId)} style=${{width:'200px'}} />
+  async function saveCategory() {
+    if (!form.name.trim()) {setErr('Name required');return;}
+    setSaving(true);setErr('');
+    try {
+      if (form._editId) {
+        await apiFetch(`/api/categories/${form._editId}`,{method:'PATCH',body:{
+          name:form.name.trim(),color:form.color,
+          budget_amount:form.budget_amount?parseFloat(form.budget_amount):null,
+        }});
+      } else {
+        await apiFetch('/api/categories',{method:'POST',body:{
+          name:form.name.trim(),color:form.color,
+          parent_id:addParent==='root'?null:addParent,
+          budget_amount:form.budget_amount?parseFloat(form.budget_amount):null,
+        }});
+      }
+      resetForm();
+      onUpdate&&onUpdate();
+    } catch(e){setErr(e.message);}
+    finally{setSaving(false);}
+  }
+
+  async function delCategory(id) {
+    if(!confirm('Delete category? Transactions will be unassigned.'))return;
+    try{await apiFetch(`/api/categories/${id}`,{method:'DELETE'});onUpdate&&onUpdate();}
+    catch(e){alert(e.message);}
+  }
+
+  async function addDynEntry() {
+    if(!dynForm.name.trim())return;
+    try{
+      await apiFetch('/api/dynamic-entries',{method:'POST',body:{entry_type:dynForm.type,name:dynForm.name.trim()}});
+      setDynForm({type:'car',name:''});setShowAddDyn(false);reloadDyn();
+    }catch(e){alert(e.message);}
+  }
+
+  async function delDynEntry(id) {
+    if(!confirm('Remove this entry?'))return;
+    try{await apiFetch(`/api/dynamic-entries/${id}`,{method:'DELETE'});reloadDyn();}
+    catch(e){alert(e.message);}
+  }
+
+  const renderTree = (cats, depth=0) => cats.map(c=>html`
+    <div key=${c.id}>
+      <div className=${`cat-row l${Math.min(c.level,2)}`} onClick=${()=>toggle(c.id)}
+        style=${{paddingLeft:`${8+depth*16}px`}}>
+        <span style=${{fontSize:'11px',color:'var(--t3)',fontFamily:'var(--mono)',width:'12px'}}>
+          ${(childrenOf[c.id]||[]).length>0?(expanded[c.id]?'▾':'▸'):''}
+        </span>
+        <div className="cat-dot" style=${{background:c.color||'var(--t3)'}}/>
+        <span className="cat-name" style=${{fontSize:c.level===1?'13px':'12px'}}>${c.name}</span>
+        ${c.is_system&&html`<span style=${{fontSize:'9px',color:'var(--t4)',fontFamily:'var(--mono)'}}>sys</span>`}
+        ${c.is_dynamic_parent&&html`<span style=${{fontSize:'9px',color:'var(--purple)',fontFamily:'var(--mono)'}}>+${c.entry_type}s</span>`}
+        ${c.budget_amount&&html`<span className="cat-bud">${fmt(c.budget_amount)}/mo</span>`}
+        <div className="cat-acts" onClick=${e=>e.stopPropagation()}>
+          <button className="icon-btn" onClick=${()=>{
+            setForm({name:c.name,color:c.color||'#3d9eff',budget_amount:c.budget_amount||'',_editId:c.id});
+            setAddParent(c.id);
+          }}>edit</button>
+          <button className="icon-btn" onClick=${()=>{
+            setAddParent(c.id);
+            setForm({name:'',color:c.color||'#3d9eff',budget_amount:'',_editId:null});
+          }}>+ sub</button>
+          ${!c.is_system&&html`<button className="icon-btn del" onClick=${()=>delCategory(c.id)}>del</button>`}
         </div>
-        <div className="form-group">
-          <label className="form-label">Color</label>
-          <input type="color" className="color-input" value=${form.color}
-            onInput=${e=>setForm(f=>({...f,color:e.target.value}))} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Budget / mo</label>
-          <input className="form-input" type="number" placeholder="Optional" value=${form.budget_amount}
-            onInput=${e=>setForm(f=>({...f,budget_amount:e.target.value}))} style=${{width:'120px'}} />
-        </div>
-        <button className="btn btn-success" onClick=${()=>save(parentId)} disabled=${saving}>
-          ${saving?'saving...':editId?'save changes':'+ add'}
-        </button>
-        <button className="btn btn-ghost" onClick=${()=>{setShowAddParent(false);setShowAddChild(null);setEditId(null);setErr('');}}>
-          cancel
-        </button>
       </div>
-      ${err && html`<div className="err-msg">${err}</div>`}
-    </div>`;
+      ${addParent===c.id&&html`
+        <${CategoryAddForm}
+          form=${form} setForm=${setForm}
+          onSave=${saveCategory} onCancel=${resetForm}
+          saving=${saving} err=${err}/>`}
+      ${expanded[c.id]&&(childrenOf[c.id]||[]).length>0&&html`
+        <div>${renderTree(childrenOf[c.id]||[],depth+1)}</div>`}
+    </div>`);
+
+  const dynByType = useMemo(()=>{
+    const m={};(dynEntries||[]).forEach(e=>{if(!m[e.entry_type])m[e.entry_type]=[];m[e.entry_type].push(e);});return m;
+  },[dynEntries]);
 
   return html`
-    <div style=${{display:'flex',flexDirection:'column',gap:'16px'}}>
-      <div className="panel">
-        <div className="panel-header">
-          <span className="panel-title">Category Management</span>
-          <div className="panel-actions">
-            <button className="btn btn-primary" onClick=${()=>{setShowAddParent(p=>!p);setEditId(null);setForm({name:'',color:'#4d9fff',budget_amount:''});}}>
-              + New category
-            </button>
+    <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+      <div className="two-col">
+        <div className="panel">
+          <div className="ph">
+            <span className="ph-title">Category Tree</span>
+            <div className="ph-right">
+              <button className="btn btn-p" onClick=${()=>{
+                setAddParent('root');
+                setForm({name:'',color:'#3d9eff',budget_amount:'',_editId:null});
+              }}>+ Top-Level</button>
+            </div>
+          </div>
+          <div style=${{padding:'8px'}}>
+            ${addParent==='root'&&html`
+              <${CategoryAddForm}
+                form=${form} setForm=${setForm}
+                onSave=${saveCategory} onCancel=${resetForm}
+                saving=${saving} err=${err}/>`}
+            ${renderTree(l1cats)}
           </div>
         </div>
-        <div style=${{padding:'14px',display:'flex',flexDirection:'column',gap:'4px'}}>
-          ${showAddParent && html`<${AddForm} parentId=${null} />`}
-          ${parents.map(p=>html`
-            <div key=${p.id}>
-              <div className="cat-parent-row" onClick=${()=>toggleExpand(p.id)}>
-                <span style=${{fontSize:'11px',color:'var(--text3)',fontFamily:'var(--mono)',marginRight:'2px'}}>
-                  ${expanded[p.id]?'▾':'▸'}
-                </span>
-                <div className="cat-color-dot" style=${{background:p.color}} />
-                <span className="cat-row-name">${p.name}</span>
-                ${p.is_system && html`<span style=${{fontSize:'10px',color:'var(--text4)',fontFamily:'var(--mono)'}}>system</span>`}
-                ${p.budget_amount && html`<span className="cat-row-budget">${fmt(p.budget_amount)}/mo</span>`}
-                <span style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
-                  ${(childrenOf[p.id]||[]).length} sub
-                </span>
-                <div className="cat-row-actions">
-                  <button className="icon-btn" onClick=${e=>{e.stopPropagation();startEdit(p);}}>edit</button>
-                  ${!p.is_system && html`<button className="icon-btn danger" onClick=${e=>{e.stopPropagation();deleteCategory(p.id);}}>del</button>`}
+        <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
+          ${['car','project','trip'].map(type=>html`
+            <div key=${type} className="panel">
+              <div className="ph">
+                <span className="ph-title">${type==='car'?'Cars':type==='project'?'Home Projects':'Trips'}</span>
+                <div className="ph-right">
+                  <button className="btn btn-p" style=${{fontSize:'10px',padding:'4px 10px'}}
+                    onClick=${()=>setShowAddDyn(type)}>+ Add</button>
                 </div>
               </div>
-
-              ${expanded[p.id] && html`
-                <div className="cat-children">
-                  ${(childrenOf[p.id]||[]).map(c=>html`
-                    <div key=${c.id} className="cat-child-row">
-                      <div className="cat-color-dot" style=${{background:c.color||p.color}} />
-                      <span style=${{fontSize:'12px',flex:1}}>${c.name}</span>
-                      ${c.budget_amount && html`<span className="cat-row-budget">${fmt(c.budget_amount)}/mo</span>`}
-                      <div className="cat-row-actions">
-                        <button className="icon-btn" onClick=${()=>startEdit(c)}>edit</button>
-                        ${!c.is_system && html`<button className="icon-btn danger" onClick=${()=>deleteCategory(c.id)}>del</button>`}
-                      </div>
-                    </div>`)}
-                  <div style=${{paddingTop:'4px'}}>
-                    ${showAddChild===p.id
-                      ? html`<${AddForm} parentId=${p.id} />`
-                      : html`<button className="icon-btn" style=${{fontSize:'11px'}}
-                          onClick=${e=>{e.stopPropagation();setShowAddChild(p.id);setEditId(null);setForm({name:'',color:p.color||'#4d9fff',budget_amount:''});}}>
-                          + subcategory
-                        </button>`}
+              ${showAddDyn===type&&html`
+                <div style=${{padding:'10px',borderBottom:'1px solid var(--ln)',background:'var(--s2)'}}>
+                  <div className="form-row">
+                    <div className="fg" style=${{flex:1}}>
+                      <label className="fl">Name</label>
+                      <input className="fi" autoFocus
+                        placeholder=${type==='car'?'e.g. Tacoma':type==='project'?'e.g. Kitchen Remodel':'e.g. Vegas 2026'}
+                        value=${dynForm.name}
+                        onInput=${e=>setDynForm(f=>({...f,name:e.target.value,type}))}
+                        onKeyDown=${e=>e.key==='Enter'&&addDynEntry()}
+                        style=${{width:'100%'}}/>
+                    </div>
+                    <button className="btn btn-s" onClick=${()=>{setDynForm(f=>({...f,type}));addDynEntry();}}>+ add</button>
+                    <button className="btn btn-g" onClick=${()=>setShowAddDyn(false)}>cancel</button>
                   </div>
                 </div>`}
+              <div>
+                ${(dynByType[type]||[]).length===0
+                  ? html`<div className="empty" style=${{padding:'16px'}}>No ${type}s yet</div>`
+                  : (dynByType[type]||[]).map(e=>html`
+                    <div key=${e.id} className="entry-row">
+                      <div className="entry-type-dot" style=${{background:type==='car'?'var(--amber)':type==='project'?'var(--blue)':'var(--green)'}}/>
+                      <span className="entry-name">${e.name}</span>
+                      <button className="icon-btn del" onClick=${()=>delDynEntry(e.id)}>remove</button>
+                    </div>`)}
+              </div>
             </div>`)}
         </div>
       </div>
     </div>`;
 }
 
-// ── Rules View ──
-function RulesView({categories}) {
+// ══════════════════════════════════════════════
+// RULES PAGE — V4.1.1
+// Fix: rule editing reuses add form, focus fix
+// ══════════════════════════════════════════════
+
+const EMPTY_RULE_FORM = {
+  match_type:'description_contains', match_value:'',
+  txn_class:'expense', cat_l2:'', cat_l3:'', cat_l4:'', cat_l5:'',
+  recurring_type:'', merchant_clean:'', apply_to_existing:false, priority:100,
+  _editId: null,
+};
+
+function RulesPage({categories}) {
   const {data, loading, reload} = useAPI('/api/rules');
-  const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({match_type:'description_contains',match_value:'',txn_class:'expense',category_id:'',merchant_clean:'',recurring_type:'',apply_to_existing:false});
-  const [saving, setSaving] = useState(false);
-  const [err, setErr] = useState('');
-  const [search, setSearch] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [search, setSearch]     = useState('');
+  const {data:dynEntries}       = useAPI('/api/dynamic-entries');
+  const [form, setForm]         = useState({...EMPTY_RULE_FORM});
+  const [saving, setSaving]     = useState(false);
+  const [err, setErr]           = useState('');
+  const matchInputRef           = useRef(null);
 
-  const rules = data || [];
-  const filtered = rules.filter(r=>!search||r.match_value.toLowerCase().includes(search.toLowerCase())||((r.merchant_clean||'').toLowerCase().includes(search.toLowerCase())));
-
+  const rules = data||[];
   const catMap = useMemo(()=>{const m={};(categories||[]).forEach(c=>{m[c.id]=c;});return m;},[categories]);
-  const parentCats = (categories||[]).filter(c=>!c.parent_id);
 
-  async function addRule() {
-    if (!form.match_value.trim()) { setErr('Match value required'); return; }
-    setSaving(true); setErr('');
-    try {
-      await apiFetch('/api/rules', {method:'POST', body:{
-        ...form,
-        category_id: form.category_id || null,
-        recurring_type: form.recurring_type || null,
-        merchant_clean: form.merchant_clean || null,
-      }});
-      setShowAdd(false);
-      setForm({match_type:'description_contains',match_value:'',txn_class:'expense',category_id:'',merchant_clean:'',recurring_type:'',apply_to_existing:false});
+  const childrenOf = useMemo(()=>{
+    const m={};(categories||[]).forEach(c=>{
+      if(c.parent_id){if(!m[c.parent_id])m[c.parent_id]=[];m[c.parent_id].push(c);}
+    });return m;
+  },[categories]);
+
+  const dynByType = useMemo(()=>{
+    const m={};(dynEntries||[]).forEach(e=>{if(!m[e.entry_type])m[e.entry_type]=[];m[e.entry_type].push(e);});return m;
+  },[dynEntries]);
+
+  const formL2opts = useMemo(()=>{
+    const l1id = L1MAP[form.txn_class];
+    return l1id ? (childrenOf[l1id]||[]) : [];
+  },[form.txn_class,childrenOf]);
+  const formL3opts = useMemo(()=>childrenOf[form.cat_l2]||[],[form.cat_l2,childrenOf]);
+  const formL4opts = useMemo(()=>childrenOf[form.cat_l3]||[],[form.cat_l3,childrenOf]);
+  const formL5opts = useMemo(()=>{
+    const cat = catMap[form.cat_l4];
+    if(!cat||!cat.is_dynamic_parent||!cat.entry_type) return [];
+    return dynByType[cat.entry_type]||[];
+  },[form.cat_l4,catMap,dynByType]);
+
+  const filtered = rules.filter(r=>!search||
+    r.match_value.toLowerCase().includes(search.toLowerCase())||
+    (r.merchant_clean||'').toLowerCase().includes(search.toLowerCase()));
+
+  const openAdd = () => {
+    setForm({...EMPTY_RULE_FORM});
+    setShowForm(true);
+    setErr('');
+    setTimeout(()=>matchInputRef.current?.focus(),50);
+  };
+
+  const openEdit = (r) => {
+    setForm({
+      match_type:     r.match_type,
+      match_value:    r.match_value,
+      txn_class:      r.txn_class||'expense',
+      cat_l2:         r.cat_l2||'',
+      cat_l3:         r.cat_l3||'',
+      cat_l4:         r.cat_l4||'',
+      cat_l5:         r.cat_l5||'',
+      recurring_type: r.recurring_type||'',
+      merchant_clean: r.merchant_clean||'',
+      apply_to_existing: false,
+      priority:       r.priority||100,
+      _editId:        r.id,
+    });
+    setShowForm(true);
+    setErr('');
+    setTimeout(()=>matchInputRef.current?.focus(),50);
+  };
+
+  const cancelForm = () => {
+    setShowForm(false);
+    setForm({...EMPTY_RULE_FORM});
+    setErr('');
+  };
+
+  async function submitRule() {
+    if(!form.match_value.trim()){setErr('Match value required');return;}
+    setSaving(true);setErr('');
+    const payload = {
+      match_type:       form.match_type,
+      match_value:      form.match_value,
+      txn_class:        form.txn_class||null,
+      cat_l2:           form.cat_l2||null,
+      cat_l3:           form.cat_l3||null,
+      cat_l4:           form.cat_l4||null,
+      cat_l5:           form.cat_l5||null,
+      recurring_type:   form.recurring_type||null,
+      merchant_clean:   form.merchant_clean||null,
+      apply_to_existing:form.apply_to_existing,
+      priority:         form.priority,
+    };
+    try{
+      if (form._editId) {
+        await apiFetch(`/api/rules/${form._editId}`,{method:'PATCH',body:{
+          ...payload, is_active:true,
+        }});
+      } else {
+        await apiFetch('/api/rules',{method:'POST',body:payload});
+      }
+      cancelForm();
       reload();
-    } catch(e) { setErr(e.message); }
-    finally { setSaving(false); }
+    }catch(e){setErr(e.message);}
+    finally{setSaving(false);}
   }
 
-  async function toggleActive(rule) {
-    await apiFetch(`/api/rules/${rule.id}`, {method:'PATCH', body:{is_active:!rule.is_active}});
+  async function toggleActive(r) {
+    await apiFetch(`/api/rules/${r.id}`,{method:'PATCH',body:{is_active:!r.is_active}});
     reload();
   }
 
-  async function deleteRule(id) {
-    if (!confirm('Delete this rule?')) return;
-    await apiFetch(`/api/rules/${id}`, {method:'DELETE'});
+  async function delRule(id) {
+    if(!confirm('Delete this rule?'))return;
+    await apiFetch(`/api/rules/${id}`,{method:'DELETE'});
     reload();
   }
 
-  if (loading) return html`<div className="loading">Loading rules...</div>`;
+  if(loading) return html`<div className="loading">Loading rules...</div>`;
 
   return html`
     <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
       <div className="panel">
-        <div className="panel-header">
-          <span className="panel-title">Merchant Rules</span>
-          <span style=${{fontSize:'11px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
-            ${rules.filter(r=>r.is_system).length} system · ${rules.filter(r=>!r.is_system).length} user
-          </span>
-          <div className="panel-actions">
-            <div className="search-wrap" style=${{width:'200px'}}>
-              <svg className="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/>
-              </svg>
-              <input className="search-input" placeholder="Search rules..."
-                value=${search} onInput=${e=>setSearch(e.target.value)} />
+        <div className="ph">
+          <span className="ph-title">Merchant Rules</span>
+          <span className="ph-stat">${rules.filter(r=>r.is_system).length} system · ${rules.filter(r=>!r.is_system).length} user</span>
+          <div className="ph-right">
+            <div className="sw" style=${{width:'180px'}}>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="m11 11 3 3"/></svg>
+              <input className="si" placeholder="Search rules..." value=${search} onInput=${e=>setSearch(e.target.value)}/>
             </div>
-            <button className="btn btn-primary" onClick=${()=>setShowAdd(p=>!p)}>+ New rule</button>
+            <button className="btn btn-p" onClick=${openAdd}>+ New rule</button>
           </div>
         </div>
 
-        ${showAdd && html`
-          <div style=${{padding:'14px',borderBottom:'1px solid var(--border)',background:'var(--bg3)'}}>
+        ${showForm&&html`
+          <div style=${{padding:'12px',borderBottom:'1px solid var(--ln)',background:'var(--s2)'}}>
+            <div style=${{fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t3)',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'1px'}}>
+              ${form._editId?'Edit rule':'New rule'}
+            </div>
+
+            <!-- Row 1: match -->
             <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">Match type</label>
-                <select className="form-select" value=${form.match_type}
-                  onChange=${e=>setForm(f=>({...f,match_type:e.target.value}))}>
+              <div className="fg">
+                <label className="fl">Match type</label>
+                <select className="fs" value=${form.match_type} onChange=${e=>setForm(f=>({...f,match_type:e.target.value}))}>
                   <option value="description_contains">Description contains</option>
                   <option value="description_starts_with">Description starts with</option>
                   <option value="counterparty_exact">Counterparty exact</option>
                 </select>
               </div>
-              <div className="form-group" style=${{flex:1}}>
-                <label className="form-label">Match value</label>
-                <input className="form-input" placeholder="e.g. netflix, MSPBNA, Spotify..." value=${form.match_value}
-                  onInput=${e=>setForm(f=>({...f,match_value:e.target.value}))} style=${{width:'100%'}} />
+              <div className="fg" style=${{flex:1}}>
+                <label className="fl">Match value</label>
+                <input ref=${matchInputRef} className="fi" placeholder="e.g. NETFLIX, MSPBNA..."
+                  value=${form.match_value}
+                  onInput=${e=>setForm(f=>({...f,match_value:e.target.value}))}
+                  style=${{width:'100%'}}/>
               </div>
-              <div className="form-group">
-                <label className="form-label">Class</label>
-                <select className="form-select" value=${form.txn_class}
-                  onChange=${e=>setForm(f=>({...f,txn_class:e.target.value}))}>
-                  ${TXN_CLASSES.map(c=>html`<option key=${c.value} value=${c.value}>${c.label}</option>`)}
+              <div className="fg">
+                <label className="fl">Display name</label>
+                <input className="fi" placeholder="Clean merchant name" value=${form.merchant_clean}
+                  onInput=${e=>setForm(f=>({...f,merchant_clean:e.target.value}))} style=${{width:'140px'}}/>
+              </div>
+            </div>
+
+            <!-- Row 2: classification + recurring -->
+            <div className="form-row" style=${{marginTop:'8px'}}>
+              <div className="fg">
+                <label className="fl">Classification</label>
+                <select className="fs" value=${form.txn_class}
+                  onChange=${e=>setForm(f=>({...f,txn_class:e.target.value,cat_l2:'',cat_l3:'',cat_l4:'',cat_l5:''}))}>
+                  <option value="">— none —</option>
+                  ${TXN_CLASSES.map(c=>html`<option key=${c.v} value=${c.v}>${c.label}</option>`)}
                 </select>
               </div>
-              <div className="form-group">
-                <label className="form-label">Category</label>
-                <select className="form-select" value=${form.category_id}
-                  onChange=${e=>setForm(f=>({...f,category_id:e.target.value}))}>
-                  <option value="">None</option>
-                  ${parentCats.map(p=>html`<option key=${p.id} value=${p.id}>${p.name}</option>`)}
-                </select>
-              </div>
-              <div className="form-group">
-                <label className="form-label">Recurring</label>
-                <select className="form-select" value=${form.recurring_type}
-                  onChange=${e=>setForm(f=>({...f,recurring_type:e.target.value}))}>
-                  ${RECURRING_TYPES.map(r=>html`<option key=${r.value} value=${r.value}>${r.label}</option>`)}
+              <div className="fg">
+                <label className="fl">Recurring type</label>
+                <select className="fs" value=${form.recurring_type} onChange=${e=>setForm(f=>({...f,recurring_type:e.target.value}))}>
+                  <option value="">— none —</option>
+                  ${RECURRING_TYPES.map(r=>html`<option key=${r.v} value=${r.v}>${r.label}</option>`)}
                 </select>
               </div>
             </div>
+
+            <!-- Row 3: full category chain -->
             <div className="form-row" style=${{marginTop:'8px'}}>
-              <div className="form-group" style=${{flex:1}}>
-                <label className="form-label">Display name (optional)</label>
-                <input className="form-input" placeholder="Clean merchant name to show in UI" value=${form.merchant_clean}
-                  onInput=${e=>setForm(f=>({...f,merchant_clean:e.target.value}))} style=${{width:'100%'}} />
-              </div>
-              <label style=${{display:'flex',alignItems:'center',gap:'6px',fontSize:'12px',color:'var(--text2)',cursor:'pointer',paddingBottom:'2px'}}>
+              ${formL2opts.length>0&&html`
+                <div className="fg">
+                  <label className="fl">Category</label>
+                  <select className="fs" value=${form.cat_l2}
+                    onChange=${e=>setForm(f=>({...f,cat_l2:e.target.value,cat_l3:'',cat_l4:'',cat_l5:''}))}>
+                    <option value="">— L2 —</option>
+                    ${formL2opts.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                  </select>
+                </div>`}
+              ${form.cat_l2&&formL3opts.length>0&&html`
+                <div className="fg">
+                  <label className="fl">Sub</label>
+                  <select className="fs" value=${form.cat_l3}
+                    onChange=${e=>setForm(f=>({...f,cat_l3:e.target.value,cat_l4:'',cat_l5:''}))}>
+                    <option value="">— L3 —</option>
+                    ${formL3opts.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                  </select>
+                </div>`}
+              ${form.cat_l3&&formL4opts.length>0&&html`
+                <div className="fg">
+                  <label className="fl">Detail</label>
+                  <select className="fs" value=${form.cat_l4}
+                    onChange=${e=>setForm(f=>({...f,cat_l4:e.target.value,cat_l5:''}))}>
+                    <option value="">— L4 —</option>
+                    ${formL4opts.map(c=>html`<option key=${c.id} value=${c.id}>${c.name}</option>`)}
+                  </select>
+                </div>`}
+              ${form.cat_l4&&formL5opts.length>0&&html`
+                <div className="fg">
+                  <label className="fl">Tag</label>
+                  <select className="fs" value=${form.cat_l5}
+                    onChange=${e=>setForm(f=>({...f,cat_l5:e.target.value}))}>
+                    <option value="">— tag —</option>
+                    ${formL5opts.map(e=>html`<option key=${e.id} value=${e.id}>${e.name}</option>`)}
+                  </select>
+                </div>`}
+            </div>
+
+            <!-- Row 4: options + submit -->
+            <div className="form-row" style=${{marginTop:'8px'}}>
+              <label style=${{display:'flex',alignItems:'center',gap:'5px',fontSize:'11px',color:'var(--t2)',cursor:'pointer'}}>
                 <input type="checkbox" checked=${form.apply_to_existing}
-                  onChange=${e=>setForm(f=>({...f,apply_to_existing:e.target.checked}))} />
+                  onChange=${e=>setForm(f=>({...f,apply_to_existing:e.target.checked}))}/>
                 Apply to existing transactions
               </label>
-              <button className="btn btn-success" onClick=${addRule} disabled=${saving}>
-                ${saving?'saving...':'+ add rule'}
+              <button className="btn btn-s" onClick=${submitRule} disabled=${saving}>
+                ${saving?'saving…':form._editId?'save changes':'+ add rule'}
               </button>
-              <button className="btn btn-ghost" onClick=${()=>{setShowAdd(false);setErr('');}}>cancel</button>
+              <button className="btn btn-g" onClick=${cancelForm}>cancel</button>
             </div>
-            ${err && html`<div className="err-msg">${err}</div>`}
+            ${err&&html`<div className="err">${err}</div>`}
           </div>`}
 
         <div>
           ${filtered.map(r=>html`
-            <div key=${r.id} className="rule-row" style=${{opacity:r.is_active?1:0.4}}>
-              <div className="rule-match" style=${{minWidth:'0'}}>
-                <span style=${{color:'var(--text3)',fontFamily:'var(--mono)',fontSize:'10px'}}>${r.match_type} </span>
-                <span className="rule-match-val">"${r.match_value}"</span>
-                ${r.merchant_clean && html`<span style=${{color:'var(--text2)',fontSize:'11px'}}> → ${r.merchant_clean}</span>`}
+            <div key=${r.id} className="rule-row" style=${{opacity:r.is_active?1:.4}}>
+              <div className="rule-match">
+                <span style=${{color:'var(--t3)',fontSize:'9px'}}>${r.match_type} </span>
+                <span className="rule-val">"${r.match_value}"</span>
+                ${r.merchant_clean&&html`<span style=${{color:'var(--t2)',fontSize:'10px'}}> → ${r.merchant_clean}</span>`}
               </div>
-              <div className="rule-outputs">
-                ${r.txn_class && html`<span className="rule-pill class">${r.txn_class}</span>`}
-                ${r.category_id && catMap[r.category_id] && html`<span className="rule-pill cat">${catMap[r.category_id].name}</span>`}
-                ${r.recurring_type && html`<span className="rule-pill rec">${r.recurring_type}</span>`}
+              <div className="rule-pills">
+                ${r.txn_class&&html`<span className="rp cls">${r.txn_class}</span>`}
+                ${r.cat_l2&&catMap[r.cat_l2]&&html`<span className="rp cat">${catMap[r.cat_l2].name}</span>`}
+                ${r.cat_l3&&catMap[r.cat_l3]&&html`<span className="rp cat">${catMap[r.cat_l3].name}</span>`}
+                ${r.cat_l4&&catMap[r.cat_l4]&&html`<span className="rp cat">${catMap[r.cat_l4].name}</span>`}
+                ${r.recurring_type&&html`<span className="rp rec">${r.recurring_type}</span>`}
               </div>
-              <span className="rule-count">${(r.match_count||0).toLocaleString()} hits</span>
-              ${r.is_system && html`<span className="rule-system-badge">sys</span>`}
-              <div style=${{display:'flex',gap:'4px',flexShrink:0}}>
+              <span className="rule-cnt">${(r.match_count||0).toLocaleString()} hits</span>
+              ${r.is_system&&html`<span className="sys-tag">sys</span>`}
+              <div style=${{display:'flex',gap:'3px',flexShrink:0}}>
+                <button className=${`icon-btn ${form._editId===r.id&&showForm?'edit-active':''}`}
+                  onClick=${()=>form._editId===r.id&&showForm?cancelForm():openEdit(r)}>
+                  ${form._editId===r.id&&showForm?'cancel':'edit'}
+                </button>
                 <button className="icon-btn" onClick=${()=>toggleActive(r)}>
                   ${r.is_active?'disable':'enable'}
                 </button>
-                ${!r.is_system && html`<button className="icon-btn danger" onClick=${()=>deleteRule(r.id)}>del</button>`}
+                ${!r.is_system&&html`<button className="icon-btn del" onClick=${()=>delRule(r.id)}>del</button>`}
               </div>
             </div>`)}
         </div>
@@ -1212,41 +1444,44 @@ function RulesView({categories}) {
     </div>`;
 }
 
-// ── Accounts / Balances View ──
-function AccountsView({accounts, onRefresh, refreshing}) {
-  const checking = (accounts||[]).filter(a=>a.type==='depository'&&!a.is_savings);
-  const savings = (accounts||[]).filter(a=>a.is_savings);
-  const credit = (accounts||[]).filter(a=>a.type==='credit');
+// ══════════════════════════════════════════════
+// ACCOUNTS PAGE — unchanged
+// ══════════════════════════════════════════════
+function AccountsPage({accounts, onRefresh, refreshing}) {
+  const checking = (accounts||[]).filter(a=>a.type==='depository'&&!a.is_savings&&!a.is_bills_only);
+  const savings  = (accounts||[]).filter(a=>a.is_savings&&!a.exclude_from_savings);
+  const bills    = (accounts||[]).filter(a=>a.exclude_from_savings||a.is_bills_only);
+  const credit   = (accounts||[]).filter(a=>a.type==='credit');
 
-  const totalChecking = checking.reduce((s,a)=>s+(a.balance_ledger||0),0);
-  const totalSavings = savings.reduce((s,a)=>s+(a.balance_ledger||0),0);
-  const totalDebt = credit.reduce((s,a)=>s+Math.abs(a.balance_ledger||0),0);
-  const netWorth = totalChecking + totalSavings - totalDebt;
+  // V4.1.2: use available balance for checking/savings, ledger for credit debt
+  const totChk  = checking.reduce((s,a)=>s+(a.balance_available??a.balance_ledger??0),0);
+  const totSav  = savings.reduce((s,a)=>s+(a.balance_available??a.balance_ledger??0),0);
+  const totDebt = credit.reduce((s,a)=>s+Math.abs(a.balance_ledger||0),0);
+  const netLiq  = totChk+totSav-totDebt;
 
-  const AccountGroup = ({title, accts, colorClass}) => html`
+  const Group = ({title, accts, colorVar}) => html`
     <div className="panel">
-      <div className="panel-header">
-        <span className="panel-title">${title}</span>
-        <span style=${{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:'13px',color:`var(--${colorClass})`}}>
+      <div className="ph">
+        <span className="ph-title">${title}</span>
+        <span style=${{marginLeft:'auto',fontFamily:'var(--mono)',fontSize:'13px',color:`var(${colorVar})`}}>
           ${fmt(accts.reduce((s,a)=>s+Math.abs(a.balance_ledger||0),0))}
         </span>
       </div>
-      <div style=${{padding:'4px 0'}}>
+      <div>
         ${accts.map(a=>html`
-          <div key=${a.id} style=${{display:'flex',alignItems:'center',gap:'12px',padding:'10px 16px',borderBottom:'1px solid var(--border)'}}>
+          <div key=${a.id} style=${{display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',borderBottom:'1px solid var(--ln)'}}>
             <div style=${{flex:1}}>
               <div style=${{fontSize:'13px',fontWeight:'500'}}>${shortName(a.name)}</div>
-              <div style=${{fontSize:'11px',color:'var(--text2)',fontFamily:'var(--mono)',marginTop:'2px'}}>${a.institution} ···${a.last_four}</div>
+              <div style=${{fontFamily:'var(--mono)',fontSize:'10px',color:'var(--t2)',marginTop:'1px'}}>${a.institution} ···${a.last_four}</div>
             </div>
-            <${OwnerBadge} owner=${a.owner} />
+            <${OB} owner=${a.owner}/>
+            ${a.exclude_from_savings&&html`<span className="badge b-exp" style=${{fontSize:'9px'}}>bills only</span>`}
             <div style=${{textAlign:'right'}}>
-              <div style=${{fontFamily:'var(--mono)',fontSize:'14px',fontWeight:'500',color:`var(--${colorClass})`}}>
-                ${a.balance_ledger != null ? fmt(Math.abs(a.balance_ledger)) : '—'}
+              <div style=${{fontFamily:'var(--mono)',fontSize:'14px',fontWeight:'600',color:`var(${colorVar})`}}>
+                ${a.balance_available!=null?fmt(Math.abs(a.balance_available)):a.balance_ledger!=null?fmt(Math.abs(a.balance_ledger)):'—'}
               </div>
-              ${a.balance_available != null && a.balance_available !== a.balance_ledger && html`
-                <div style=${{fontSize:'10px',color:'var(--text3)',fontFamily:'var(--mono)'}}>
-                  avail ${fmt(a.balance_available)}
-                </div>`}
+              ${a.balance_available!=null&&a.balance_ledger!=null&&a.balance_available!==a.balance_ledger&&html`
+                <div style=${{fontSize:'10px',color:'var(--t3)',fontFamily:'var(--mono)'}}>posted ${fmt(a.balance_ledger)}</div>`}
             </div>
           </div>`)}
       </div>
@@ -1254,160 +1489,137 @@ function AccountsView({accounts, onRefresh, refreshing}) {
 
   return html`
     <div style=${{display:'flex',flexDirection:'column',gap:'14px'}}>
-      <div className="summary-grid">
-        <div className="sum-card blue">
-          <div className="sum-label">Checking</div>
-          <div className="sum-value blue">${fmt(totalChecking)}</div>
-          <div className="sum-sub">${checking.length} accounts</div>
-        </div>
-        <div className="sum-card green">
-          <div className="sum-label">Savings</div>
-          <div className="sum-value green">${fmt(totalSavings)}</div>
-          <div className="sum-sub">${savings.length} accounts</div>
-        </div>
-        <div className="sum-card red">
-          <div className="sum-label">Credit Debt</div>
-          <div className="sum-value red">${fmt(totalDebt)}</div>
-          <div className="sum-sub">${credit.length} cards</div>
-        </div>
-        <div className=${`sum-card ${netWorth>=0?'green':'red'}`}>
-          <div className="sum-label">Net Liquid</div>
-          <div className=${`sum-value ${netWorth>=0?'green':'red'}`}>${fmt(netWorth)}</div>
-          <div className="sum-sub">Checking + savings − debt</div>
+      <div className="kpi-grid">
+        <div className="kpi b"><div className="kpi-label">Checking</div><div className="kpi-val b">${fmt(totChk)}</div><div className="kpi-sub">${checking.length} accounts</div></div>
+        <div className="kpi g"><div className="kpi-label">True Savings</div><div className="kpi-val g">${fmt(totSav)}</div><div className="kpi-sub">${savings.length} accounts</div></div>
+        <div className="kpi r"><div className="kpi-label">Credit Debt</div><div className="kpi-val r">${fmt(totDebt)}</div><div className="kpi-sub">${credit.length} cards</div></div>
+        <div className=${`kpi ${netLiq>=0?'g':'r'}`}>
+          <div className="kpi-label">Net Liquid</div>
+          <div className=${`kpi-val ${netLiq>=0?'g':'r'}`}>${fmt(netLiq)}</div>
+          <div className="kpi-sub">Chk + sav − debt</div>
         </div>
       </div>
       <div style=${{display:'flex',justifyContent:'flex-end'}}>
-        <button className=${`btn btn-ghost ${refreshing?'syncing':''}`} onClick=${onRefresh} disabled=${refreshing}>
-          ${refreshing?'refreshing balances...':'↻ refresh balances'}
+        <button className=${`btn btn-g ${refreshing?'busy':''}`} onClick=${onRefresh} disabled=${refreshing}>
+          ${refreshing?html`<span className="spin">↻</span> refreshing…`:'↻ refresh balances'}
         </button>
       </div>
-      <${AccountGroup} title="Checking Accounts" accts=${checking} colorClass="blue" />
-      <${AccountGroup} title="Savings Accounts" accts=${savings} colorClass="green" />
-      <${AccountGroup} title="Credit Cards" accts=${credit} colorClass="red" />
+      <${Group} title="Checking Accounts"     accts=${checking} colorVar="--blue"/>
+      <${Group} title="True Savings"          accts=${savings}  colorVar="--green"/>
+      <${Group} title="Bills / Mortgage Acct" accts=${bills}    colorVar="--amber"/>
+      <${Group} title="Credit Cards"          accts=${credit}   colorVar="--red"/>
     </div>`;
 }
 
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 // APP ROOT
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════
 function App() {
-  const [tab, setTab] = useState('transactions');
-  const [txnClassFilter, setTxnClassFilter] = useState('');
-  const [syncing, setSyncing] = useState(false);
-  const [refreshingBalances, setRefreshingBalances] = useState(false);
-  const [uncatCount, setUncatCount] = useState(0);
+  const [tab, setTab]              = useState('overview');
+  const [period, setPeriod]        = useState('month');
+  const [year, setYear]            = useState(CUR_YEAR);
+  const [month, setMonth]          = useState(CUR_MONTH);
+  const [syncing, setSyncing]      = useState(false);
+  const [refreshingBal, setRefBal] = useState(false);
+  const [txnFilter, setTxnFilter]  = useState('');
 
-  const {data: accounts, reload: reloadAccounts} = useAPI('/api/accounts');
-  const {data: categories, reload: reloadCategories} = useAPI('/api/categories');
-  const {data: summary, reload: reloadSummary} = useAPI('/api/summary');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(()=>{
-    if (summary) setUncatCount(summary.uncategorized_count || 0);
-  },[summary]);
+  const {data:accounts,  reload:reloadAccts} = useAPI('/api/accounts');
+  const {data:categories,reload:reloadCats}  = useAPI('/api/categories');
 
-  async function sync() {
+  const summaryPath = period==='year'
+    ? `/api/summary?period=year&year=${year}`
+    : `/api/summary?period=month&year=${year}&month=${month}`;
+  const {data:sum, reload:reloadSum} = useAPI(summaryPath,[summaryPath]);
+  const uncatCount = sum?.uncategorized_count||0;
+
+  function reloadAll(){reloadAccts();reloadCats();reloadSum();setRefreshKey(k=>k+1);}
+
+  async function doSync() {
     setSyncing(true);
-    try {
-      await apiFetch('/api/sync', {method:'POST'});
-      reloadAccounts(); reloadCategories(); reloadSummary();
-    } finally { setSyncing(false); }
+    try{await apiFetch('/api/sync',{method:'POST'});reloadAll();}
+    catch(e){alert('Sync failed: '+e.message);}
+    finally{setSyncing(false);}
   }
 
-  async function refreshBalances() {
-    setRefreshingBalances(true);
-    try {
-      await apiFetch('/api/balances/refresh', {method:'POST'});
-      reloadAccounts(); reloadSummary();
-    } finally { setRefreshingBalances(false); }
+  async function doRefreshBal() {
+    setRefBal(true);
+    try{await apiFetch('/api/balances/refresh',{method:'POST'});reloadAccts();reloadSum();}
+    catch(e){alert(e.message);}
+    finally{setRefBal(false);}
   }
 
-  function reloadAll() {
-    reloadAccounts(); reloadCategories(); reloadSummary();
-  }
+  const periodLabel = period==='year'
+    ? String(year)
+    : `${MONTHS[month-1]} ${year}`;
+
+  const years = [];
+  for(let y=CUR_YEAR;y>=2026;y--) years.push(y);
 
   const NAV = [
-    {id:'transactions', label:'Transactions', icon:'≡'},
-    {id:'recurring',    label:'Subscriptions & Bills', icon:'↻'},
-    {id:'accounts',     label:'Accounts & Balances', icon:'◈'},
-    {id:'categories',   label:'Categories', icon:'◆'},
-    {id:'rules',        label:'Merchant Rules', icon:'⚙'},
+    {id:'overview',    label:'Overview',    icon:html`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>`},
+    {id:'transactions',label:'Transactions', icon:html`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 4h12M2 8h8M2 12h5"/></svg>`},
+    {id:'accounts',    label:'Accounts',     icon:html`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="1" y="3" width="14" height="10" rx="2"/><path d="M1 7h14"/></svg>`},
+    {id:'categories',  label:'Categories',   icon:html`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>`},
+    {id:'rules',       label:'Rules',        icon:html`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="4" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M4 6v2a2 2 0 0 0 2 2h2a2 2 0 0 1 2 2"/></svg>`},
   ];
 
   const PAGE_TITLES = {
-    transactions: 'Transactions',
-    recurring: 'Subscriptions & Bills',
-    accounts: 'Accounts & Balances',
-    categories: 'Category Management',
-    rules: 'Merchant Rules',
+    overview:'Overview',transactions:'Transactions',
+    accounts:'Accounts & Balances',categories:'Category Management',rules:'Merchant Rules',
   };
 
   return html`
     <div className="app">
-      <!-- Sidebar -->
       <aside className="sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-mark">b.</div>
-          <div className="logo-text">budget<span>.</span>duo</div>
+        <div className="sb-brand">
+          <div className="sb-logo"><svg viewBox="0 0 16 16"><path d="M8 2L2 6v8h4v-4h4v4h4V6z"/></svg></div>
+          <div className="sb-title">budget<span>.</span>duo</div>
         </div>
-
-        <div className="sidebar-section">Navigation</div>
+        <div className="sb-period">
+          <div className="sb-period-label">Period</div>
+          <div className="period-toggle">
+            <button className=${`period-btn ${period==='month'?'on':''}`} onClick=${()=>setPeriod('month')}>Month</button>
+            <button className=${`period-btn ${period==='year'?'on':''}`} onClick=${()=>setPeriod('year')}>Year</button>
+          </div>
+          <div className="period-row">
+            <select className="period-sel" value=${year} onChange=${e=>setYear(Number(e.target.value))}>
+              ${years.map(y=>html`<option key=${y} value=${y}>${y}</option>`)}
+            </select>
+            ${period==='month'&&html`
+              <select className="period-sel" value=${month} onChange=${e=>setMonth(Number(e.target.value))}>
+                ${MONTHS.map((m,i)=>html`<option key=${i+1} value=${i+1}>${m}</option>`)}
+              </select>`}
+          </div>
+        </div>
+        <div className="sb-sec">Navigation</div>
         ${NAV.map(n=>html`
-          <button key=${n.id} className=${`nav-item ${tab===n.id?'active':''}`}
-            onClick=${()=>setTab(n.id)}>
-            <span className="nav-icon" style=${{fontFamily:'var(--mono)',fontSize:'13px',textAlign:'center'}}>${n.icon}</span>
-            ${n.label}
-            ${n.id==='transactions' && uncatCount > 0 && html`
-              <span className="nav-badge">${uncatCount}</span>`}
+          <button key=${n.id} className=${`nav ${tab===n.id?'on':''}`} onClick=${()=>setTab(n.id)}>
+            ${n.icon}${n.label}
+            ${n.id==='transactions'&&uncatCount>0&&html`<span className="nav-badge">${uncatCount}</span>`}
           </button>`)}
-
-        <div className="sidebar-footer">
-          <button className=${`sync-btn ${syncing?'syncing':''}`} onClick=${sync} disabled=${syncing}>
-            <span style=${{fontFamily:'var(--mono)'}}>↻</span>
-            ${syncing?'syncing...':'sync accounts'}
+        <div className="sb-bottom">
+          <button className=${`sync-btn ${syncing?'busy':''}`} onClick=${doSync} disabled=${syncing}>
+            <span className=${syncing?'spin':''}>↻</span>
+            ${syncing?'syncing…':'sync accounts'}
           </button>
         </div>
       </aside>
 
-      <!-- Main -->
       <main className="main">
-        <div className="page-header">
+        <div className="topbar">
           <div>
-            <div className="page-title">${PAGE_TITLES[tab]}</div>
-            <div className="page-sub">${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}</div>
+            <div className="topbar-title">${PAGE_TITLES[tab]}</div>
+            <div className="topbar-sub">${periodLabel}</div>
           </div>
         </div>
-
-        <div className="page-content">
-          <!-- Summary always visible on txn/accounts tabs -->
-          ${(tab==='transactions'||tab==='accounts') && html`
-            <${SummaryCards}
-              summary=${summary}
-              onUncatClick=${()=>{setTab('transactions');setTxnClassFilter('expense_uncat');}} />`}
-
-          ${tab==='transactions' && html`
-            <${TransactionsView}
-              accounts=${accounts||[]}
-              categories=${categories||[]}
-              initialClassFilter=${txnClassFilter}
-              onFilterUsed=${()=>setTxnClassFilter('')}
-              onUpdate=${reloadAll} />`}
-
-          ${tab==='recurring' && html`<${RecurringView} />`}
-
-          ${tab==='accounts' && html`
-            <${AccountsView}
-              accounts=${accounts||[]}
-              onRefresh=${refreshBalances}
-              refreshing=${refreshingBalances} />`}
-
-          ${tab==='categories' && html`
-            <${CategoriesView}
-              categories=${categories||[]}
-              onUpdate=${reloadCategories} />`}
-
-          ${tab==='rules' && html`
-            <${RulesView}
-              categories=${categories||[]} />`}
+        <div className="content">
+          ${tab==='overview'&&html`<${OverviewPage} period=${period} year=${year} month=${month} onGoToTxns=${f=>{setTab('transactions');setTxnFilter(f);}} refreshKey=${refreshKey}/>`}
+          ${tab==='transactions'&&html`<${TransactionsPage} accounts=${accounts||[]} categories=${categories||[]} period=${period} year=${year} month=${month} initialFilter=${txnFilter} onFilterUsed=${()=>setTxnFilter('')} onUpdate=${reloadAll}/>`}
+          ${tab==='accounts'&&html`<${AccountsPage} accounts=${accounts||[]} onRefresh=${doRefreshBal} refreshing=${refreshingBal}/>`}
+          ${tab==='categories'&&html`<${CategoriesPage} categories=${categories||[]} onUpdate=${reloadCats}/>`}
+          ${tab==='rules'&&html`<${RulesPage} categories=${categories||[]}/>`}
         </div>
       </main>
     </div>`;
