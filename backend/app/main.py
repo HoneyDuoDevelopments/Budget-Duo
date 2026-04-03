@@ -958,6 +958,19 @@ def _scheduled_sync():
     finally:
         db.close()
 
+    # Also trigger Synchrony scrape (fully automated, no 2FA)
+    try:
+        import httpx
+        scraper_url = os.environ.get("SCRAPER_URL", "http://scraper:8501")
+        with httpx.Client(timeout=15.0) as client:
+            resp = client.post(f"{scraper_url}/api/scrape/synchrony/start", json={})
+            if resp.status_code == 200:
+                logger.info(f"Scheduled Synchrony scrape started: {resp.json()}")
+            else:
+                logger.warning(f"Scheduled Synchrony scrape failed: {resp.status_code}")
+    except Exception as e:
+        logger.warning(f"Could not trigger Synchrony scrape: {e}")
+
 # Run every hour on the hour
 scheduler.add_job(_scheduled_sync, "interval", hours=1)
 scheduler.start()

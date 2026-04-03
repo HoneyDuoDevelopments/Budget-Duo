@@ -48,7 +48,7 @@ async def scrape_apple_card(
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=True,
+            headless=False,
             args=["--no-sandbox", "--disable-setuid-sandbox"],
         )
         context = await browser.new_context(
@@ -175,7 +175,9 @@ async def scrape_apple_card(
             # ── STEP 4: Verify we're authenticated ──
             session["status"] = "authenticated"
             logger.info("Authenticated — scraping balance")
-            await page.wait_for_timeout(3000)
+            await page.wait_for_timeout(8000)
+            await page.screenshot(path=f"{DOWNLOAD_DIR}/post_auth.png")
+            logger.info(f"Post-auth URL: {page.url}")
 
             # ── STEP 5: Scrape balance ──
             session["status"] = "scraping_balance"
@@ -188,20 +190,50 @@ async def scrape_apple_card(
             session["status"] = "scraping_transactions"
             logger.info(f"Exporting transactions: {start_date} to {end_date}")
 
-            # Click Statements in sidebar
-            statements_link = page.locator("text=Statements")
-            await statements_link.click()
-            await page.wait_for_timeout(3000)
-
-            # Click "Export Transactions"
-            export_btn = page.locator("ui-button.export-transactions-button")
+            # Click Statements in the left sidebar nav
+            # Use exact selector from Apple's nav HTML
+            statements_link = page.locator('a.menu-item-link[href="/statements"]')
             try:
-                await export_btn.wait_for(state="visible", timeout=10000)
-                await export_btn.click()
+                await statements_link.wait_for(state="visible", timeout=15000)
+                await statements_link.click()
+                logger.info("Clicked Statements via href selector")
             except Exception:
-                # Try text-based fallback
-                export_btn = page.locator("text=Export Transactions")
-                await export_btn.click()
+                # Fallback: click by label text inside nav
+                try:
+                    statements_link = page.locator('.menu-item-label:has-text("Statements")')
+                    await statements_link.click()
+                    logger.info("Clicked Statements via label text")
+                except Exception:
+                    await page.screenshot(path=f"{DOWNLOAD_DIR}/pre_statements.png")
+                    raise Exception("Could not find Statements nav link")
+
+            await page.wait_for_timeout(5000)
+
+            # Click "Export Transactions" — try multiple selectors
+            export_clicked = False
+            for selector in [
+                'ui-button.export-transactions-button',
+                'button:has-text("Export Transactions")',
+                'text="Export Transactions"',
+                '[class*="export-transactions"]',
+            ]:
+                try:
+                    el = page.locator(selector).first
+                    await el.wait_for(state="visible", timeout=5000)
+                    await el.click()
+                    export_clicked = True
+                    logger.info(f"Export Transactions clicked via: {selector}")
+                    break
+                except Exception:
+                    continue
+
+            if not export_clicked:
+                # Last resort — screenshot and log what's on the page
+                await page.screenshot(path=f"{DOWNLOAD_DIR}/statements_page.png")
+                page_text = await page.inner_text("body")
+                logger.error(f"Could not find Export Transactions. Page text preview: {page_text[:500]}")
+                raise Exception("Could not find Export Transactions button on Statements page")
+
             await page.wait_for_timeout(2000)
 
             # Set date range

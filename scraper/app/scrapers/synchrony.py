@@ -20,7 +20,7 @@ from playwright.async_api import async_playwright, Page
 logger = logging.getLogger(__name__)
 
 SYNCHRONY_URL = "https://www.synchrony.com/accounts/"
-LOGIN_URL = "https://www.synchrony.com/idp/en/signin"
+LOGIN_URL = "https://id.synchrony.com/idp/en"
 
 # Map last4 to our internal account IDs
 ACCOUNT_MAP = {
@@ -63,8 +63,8 @@ async def scrape_synchrony(
             # ── STEP 1: Login ──
             session["status"] = "logging_in"
             logger.info("Navigating to Synchrony login")
-            await page.goto(LOGIN_URL, wait_until="networkidle", timeout=30000)
-            await page.wait_for_timeout(2000)
+            await page.goto(LOGIN_URL, wait_until="domcontentloaded", timeout=30000)
+            await page.wait_for_timeout(30000)
 
             # Fill username
             username_field = page.locator("input#username")
@@ -83,7 +83,7 @@ async def scrape_synchrony(
 
             # Verify we landed on the accounts page
             try:
-                await page.wait_for_url("**/accounts/**", timeout=20000)
+                await page.wait_for_url("**/accounts/**", timeout=30000)
             except Exception:
                 # Check if there's a 2FA or security challenge
                 content = await page.content()
