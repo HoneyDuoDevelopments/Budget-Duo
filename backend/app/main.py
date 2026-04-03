@@ -1,10 +1,11 @@
 """
-Budget Duo API — V4.1
+Budget Duo API — V4.2
 
-V4.1 Changes:
-- cat_l1 is now auto-derived from txn_class on every PATCH — never manually set by user
-- cat_l5 added for dynamic entry (trip/car/project) at 5th category level
-- All other V4 logic unchanged
+V4.2 Changes:
+- Added counterparty_contains match type for merchant rules
+- Fixed L5 dynamic entry logic: checks ancestor chain for is_dynamic_parent
+- Bills-only accounts now sync (handled in sync_service)
+- Balance refresh includes all Teller accounts
 
 V4.1.1:
 - Sync scheduler changed from daily 6am to every hour
@@ -23,7 +24,7 @@ import os
 import re
 import logging
 import uuid
-import httpx 
+import httpx
 
 from app.db.models import (
     Base, Account, Transaction, Category, DynamicEntry,
@@ -39,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Budget Duo API v4.1.1")
+app = FastAPI(title="Budget Duo API v4.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -50,9 +51,6 @@ app.add_middleware(
 )
 
 FRONTEND_PATH = "/app/static/index.html"
-
-SAVINGS_ACCOUNT_LAST_FOUR = {"9992", "0224", "5994"}
-BILLS_ONLY_LAST_FOUR = {"0687"}
 
 VALID_TXN_CLASSES = {
     "income", "expense", "savings_in", "savings_out",
@@ -66,7 +64,8 @@ VALID_RECURRING_TYPES = {
 
 VALID_MATCH_TYPES = {
     "description_contains", "description_starts_with",
-    "counterparty_exact", "description_regex",
+    "counterparty_exact", "counterparty_contains",
+    "description_regex",
 }
 
 VALID_ENTRY_TYPES = {"car", "project", "trip"}
@@ -83,8 +82,6 @@ TXN_CLASS_TO_CAT_L1 = {
     "internal_transfer": "transfer",
     "ignore":            "ignore",
 }
-
-
 
 
 # ============================================================
@@ -200,7 +197,7 @@ def _serialize_txn(t: Transaction) -> dict:
         "is_recurring":   t.is_recurring,
         "user_verified":  t.user_verified,
         "rule_id":        t.rule_id,
-        "import_source": getattr(t, 'import_source', 'teller'),
+        "import_source":  getattr(t, 'import_source', 'teller'),
     }
 
 
@@ -261,6 +258,7 @@ def _apply_rule_to_existing(db: Session, rule: MerchantRule):
 
 
 def _rule_matches(rule: MerchantRule, t: Transaction) -> bool:
+    """V4.2: Added counterparty_contains match type."""
     desc = (t.description or "").lower()
     val  = rule.match_value.lower()
     if rule.match_type == "description_contains":
@@ -269,6 +267,8 @@ def _rule_matches(rule: MerchantRule, t: Transaction) -> bool:
         return desc.startswith(val)
     if rule.match_type == "counterparty_exact":
         return (t.counterparty_name or "").lower() == val
+    if rule.match_type == "counterparty_contains":
+        return val in (t.counterparty_name or "").lower()
     return False
 
 
@@ -303,7 +303,6 @@ def _auto_classify(db: Session, t: Transaction):
 
     acct = t.account
     if acct and acct.is_savings and not acct.exclude_from_savings:
-        # On the savings account itself: positive = money arrived = savings_in
         t.txn_class = "savings_in" if t.amount > 0 else "savings_out"
         t.cat_l1 = TXN_CLASS_TO_CAT_L1[t.txn_class]
         return
@@ -313,8 +312,6 @@ def _auto_classify(db: Session, t: Transaction):
         t.cat_l1 = TXN_CLASS_TO_CAT_L1[t.txn_class]
         return
 
-    # For checking/credit accounts: negative transfers toward savings = savings_in
-    # (money leaving checking to go into savings pool)
     if acct and acct.type == "credit":
         t.txn_class = "expense" if t.amount < 0 else "cc_payment"
     elif t.amount < 0:
@@ -330,7 +327,7 @@ def _auto_classify(db: Session, t: Transaction):
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "version": "4.1.1"}
+    return {"status": "ok", "version": "4.2"}
 
 
 # ============================================================
@@ -435,7 +432,6 @@ def update_transaction(
         txn.txn_class = body.txn_class or None
         txn.is_income = body.txn_class == "income"
         txn.cat_l1 = TXN_CLASS_TO_CAT_L1.get(body.txn_class) if body.txn_class else None
-        # Reset category tree when classification changes
         txn.cat_l2 = None
         txn.cat_l3 = None
         txn.cat_l4 = None
@@ -914,6 +910,8 @@ def refresh_balances(db: Session = Depends(get_db)):
         enrollment = db.get(Enrollment, account.enrollment_id)
         if not enrollment or enrollment.status != "active":
             continue
+        if enrollment.access_token == "scraper_managed":
+            continue
         try:
             client = TellerClient(enrollment.access_token)
             bal = client.get_balance(account.id)
@@ -946,7 +944,7 @@ def manual_sync(db: Session = Depends(get_db)):
 
 
 # ============================================================
-# SCHEDULER — V4.1.1: hourly instead of daily
+# SCHEDULER — hourly sync
 # ============================================================
 
 scheduler = BackgroundScheduler()
@@ -960,7 +958,6 @@ def _scheduled_sync():
 
     # Also trigger Synchrony scrape (fully automated, no 2FA)
     try:
-        import httpx
         scraper_url = os.environ.get("SCRAPER_URL", "http://scraper:8501")
         with httpx.Client(timeout=15.0) as client:
             resp = client.post(f"{scraper_url}/api/scrape/synchrony/start", json={})
@@ -971,7 +968,6 @@ def _scheduled_sync():
     except Exception as e:
         logger.warning(f"Could not trigger Synchrony scrape: {e}")
 
-# Run every hour on the hour
 scheduler.add_job(_scheduled_sync, "interval", hours=1)
 scheduler.start()
 
@@ -1017,24 +1013,15 @@ class BalanceUpdateRequest(BaseModel):
     available: Optional[float] = None
 
 
-# ── Scraper proxy: Apple Card ──
-
 @app.post("/api/scrape/apple/start")
 async def scrape_apple_start(body: ScraperAppleStartRequest):
-    """Proxy to scraper service — start Apple Card scrape."""
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(
-                f"{SCRAPER_URL}/api/scrape/apple/start",
-                json=body.model_dump(),
-            )
+            resp = await client.post(f"{SCRAPER_URL}/api/scrape/apple/start", json=body.model_dump())
             resp.raise_for_status()
             data = resp.json()
-
-            # Log the session in our DB
             db = SessionLocal()
             try:
-                from app.db.models import Base
                 db.execute(text("""
                     INSERT INTO scraper_sessions (id, provider, status, started_by)
                     VALUES (:id, 'apple', :status, 'manual')
@@ -1043,7 +1030,6 @@ async def scrape_apple_start(body: ScraperAppleStartRequest):
                 db.commit()
             finally:
                 db.close()
-
             return data
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
@@ -1051,33 +1037,22 @@ async def scrape_apple_start(body: ScraperAppleStartRequest):
 
 @app.post("/api/scrape/apple/verify")
 async def scrape_apple_verify(body: ScraperAppleVerifyRequest):
-    """Proxy to scraper service — submit 2FA code."""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(
-                f"{SCRAPER_URL}/api/scrape/apple/verify",
-                json=body.model_dump(),
-            )
+            resp = await client.post(f"{SCRAPER_URL}/api/scrape/apple/verify", json=body.model_dump())
             resp.raise_for_status()
             return resp.json()
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
 
 
-# ── Scraper proxy: Synchrony ──
-
 @app.post("/api/scrape/synchrony/start")
 async def scrape_synchrony_start():
-    """Proxy to scraper service — start Synchrony scrape."""
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(
-                f"{SCRAPER_URL}/api/scrape/synchrony/start",
-                json={},
-            )
+            resp = await client.post(f"{SCRAPER_URL}/api/scrape/synchrony/start", json={})
             resp.raise_for_status()
             data = resp.json()
-
             db = SessionLocal()
             try:
                 db.execute(text("""
@@ -1088,24 +1063,18 @@ async def scrape_synchrony_start():
                 db.commit()
             finally:
                 db.close()
-
             return data
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
 
 
-# ── Scraper session status ──
-
 @app.get("/api/scrape/status/{session_id}")
 async def scrape_status(session_id: str):
-    """Proxy to scraper service — check session status."""
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(f"{SCRAPER_URL}/api/scrape/status/{session_id}")
             resp.raise_for_status()
             data = resp.json()
-
-            # Update our DB record
             db = SessionLocal()
             try:
                 db.execute(text("""
@@ -1118,95 +1087,57 @@ async def scrape_status(session_id: str):
                 db.commit()
             finally:
                 db.close()
-
             return data
     except httpx.HTTPError as e:
         raise HTTPException(status_code=502, detail=f"Scraper service error: {e}")
 
 
-# ── Transaction import (called by scraper or manually) ──
-
 @app.post("/api/import/transactions")
 def import_transactions(body: ImportRequest, db: Session = Depends(get_db)):
-    """
-    Import scraped transactions into the transactions table.
-    Deduplicates by matching account_id + date + amount + description.
-    Runs auto-classification on new transactions.
-    """
     account = db.get(Account, body.account_id)
     if not account:
         raise HTTPException(status_code=404, detail=f"Account {body.account_id} not found")
-
     added = 0
     skipped = 0
-
     for txn_data in body.transactions:
         txn_date = txn_data.date
         amount = Decimal(str(txn_data.amount))
         description = txn_data.description.strip()
-
-        # Deduplicate: same account + date + amount + description prefix
         desc_prefix = description[:50]
         existing = db.execute(text("""
             SELECT id FROM transactions
-            WHERE account_id = :acct
-              AND date = :dt
-              AND amount = :amt
-              AND LEFT(description, 50) = :desc
+            WHERE account_id = :acct AND date = :dt AND amount = :amt AND LEFT(description, 50) = :desc
             LIMIT 1
-        """), {
-            "acct": body.account_id,
-            "dt": txn_date,
-            "amt": str(amount),
-            "desc": desc_prefix,
-        }).fetchone()
-
+        """), {"acct": body.account_id, "dt": txn_date, "amt": str(amount), "desc": desc_prefix}).fetchone()
         if existing:
             skipped += 1
             continue
-
-        # Generate a unique ID for scraped transactions
         txn_id = f"scrape_{body.import_source}_{uuid.uuid4().hex[:12]}"
-
         txn = Transaction(
-            id=txn_id,
-            account_id=body.account_id,
-            amount=amount,
-            date=date.fromisoformat(txn_date),
-            description=description,
-            counterparty_name=txn_data.merchant_clean,
-            merchant_clean=txn_data.merchant_clean,
-            status="posted",
-            is_income=amount > 0 and body.import_source != "synchrony_scrape",
+            id=txn_id, account_id=body.account_id, amount=amount,
+            date=date.fromisoformat(txn_date), description=description,
+            counterparty_name=txn_data.merchant_clean, merchant_clean=txn_data.merchant_clean,
+            status="posted", is_income=amount > 0 and body.import_source != "synchrony_scrape",
             import_source=body.import_source,
         )
         db.add(txn)
         db.flush()
-
-        # Run auto-classification
         _auto_classify(db, txn)
         added += 1
-
     db.commit()
     logger.info(f"Import complete: {added} added, {skipped} skipped (dupes) for {account.name}")
     return {"ok": True, "added": added, "skipped": skipped, "account": account.name}
 
 
-# ── Balance update for scraped accounts ──
-
 @app.post("/api/scrape/balance/update")
 def update_scraped_balance(body: BalanceUpdateRequest, db: Session = Depends(get_db)):
-    """Update balance for a scraped account."""
     account = db.get(Account, body.account_id)
     if not account:
         raise HTTPException(status_code=404, detail=f"Account {body.account_id} not found")
-
     existing = db.get(AccountBalance, body.account_id)
     if existing:
-        if body.balance is not None:
-            existing.ledger = Decimal(str(body.balance))
-        if body.available is not None:
-            existing.available = Decimal(str(body.available))
+        if body.balance is not None:   existing.ledger = Decimal(str(body.balance))
+        if body.available is not None: existing.available = Decimal(str(body.available))
         existing.fetched_at = func.now()
     else:
         db.add(AccountBalance(
@@ -1214,7 +1145,6 @@ def update_scraped_balance(body: BalanceUpdateRequest, db: Session = Depends(get
             ledger=Decimal(str(body.balance)) if body.balance is not None else None,
             available=Decimal(str(body.available)) if body.available is not None else None,
         ))
-
     db.commit()
     logger.info(f"Balance updated for {account.name}: ledger={body.balance}, available={body.available}")
     return {"ok": True, "account": account.name}
