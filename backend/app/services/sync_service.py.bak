@@ -243,7 +243,6 @@ def sync_all(db: Session) -> dict:
         # Skip scraper-managed accounts (no real Teller token)
         if enrollment.access_token == "scraper_managed":
             continue
-        import time; time.sleep(2)
         result = sync_account(db, account, enrollment)
         results[account.name] = result
         logger.info(f"Synced {account.name}: {result}")
